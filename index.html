@@ -4,10 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golf Scorecard</title>
+    <script src="https://kit.fontawesome.com/edbfca546f.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="script.js"></script>
 </head>
 <body>
-    
+    <div id="container">
+
+        <!-- header -->
+        <div class="flex w-full justify-between items-center py-4 px-6 bg-emerald-700 text-white">
+            <h2 class="text-xl">Simple Score</h2>
+            <button id="nav-button"><i class="fa-solid fa-bars"></i></button>
+        </div>
+
+        <!-- scorecard -->
+        <div class="flex flex-col gap-6 px-4 py-6 text-center">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl">Spanish Oaks Golf Course</h1>
+
+            <!-- container for front 9 and back 9 tables -->
+            <div class="flex flex-col gap-4 border-collapse lg:flex-row">
+
+                <!-- front 9 - two tables, one for names and first 5 holes, one for holes 6-9 and totals -->
+                <!-- (the reason for two tables is so it's not crammed on small screens) -->
+                <div id="front-9" class="w-full min-w-72 flex flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0">
+                    <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black">
+                        <tbody>
+                            <tr>
+                                <td>HOLE</td>
+                                <td>1</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td>5</td>
+                            </tr>
+                            <tr>
+                                <td>BLUE</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                            </tr>
+                            <tr>
+                                <td>PAR</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                            </tr>
+                            <tr>
+                                <td>Placeholder</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-2/3">
+                        <tbody>
+                            <tr>
+                                <td class="sm:hidden">HOLE</td>
+                                <td>6</td>
+                                <td>7</td>
+                                <td>8</td>
+                                <td>9</td>
+                                <td>OUT</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">BLUE</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>3000</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">PAR</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">Placeholder</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>36</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- back 9 - two tables, one for names and holes 10-14, one for last 4 holes and totals -->
+                <!-- (the reason for two tables is so it's not crammed on small screens) -->
+                <div id="back-9" class="w-full min-w-72 flex flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0">
+                    <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black lg:w-4/5">
+                        <tbody>
+                            <tr>
+                                <td class="lg:hidden">HOLE</td>
+                                <td>10</td>
+                                <td>11</td>
+                                <td>12</td>
+                                <td>13</td>
+                                <td>14</td>
+                            </tr>
+                            <tr>
+                                <td class="lg:hidden">BLUE</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                            </tr>
+                            <tr>
+                                <td class="lg:hidden">PAR</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                            </tr>
+                            <tr>
+                                <td class="lg:hidden">Placeholder</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-4/5 lg:w-full">
+                        <tbody>
+                            <tr>
+                                <td class="sm:hidden">HOLE</td>
+                                <td>15</td>
+                                <td>16</td>
+                                <td>17</td>
+                                <td>18</td>
+                                <td>IN</td>
+                                <td>TOT</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">BLUE</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>300</td>
+                                <td>3000</td>
+                                <td>6000</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">PAR</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>36</td>
+                                <td>72</td>
+                            </tr>
+                            <tr>
+                                <td class="sm:hidden">Placeholder</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>36</td>
+                                <td>72</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
