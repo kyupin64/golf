@@ -17,8 +17,14 @@
             <button id="nav-button"><i class="fa-solid fa-bars"></i></button>
         </div>
 
+        <!-- course selection screen -->
+        <div class="px-4 py-6 flex flex-col w-full items-center">
+            <h1 class="text-3xl sm:text-4xl">Pick a course:</h1>
+            <div id="course-list" class="py-6 text-xl flex flex-col items-center gap-4"></div>
+        </div>
+
         <!-- scorecard -->
-        <div class="flex flex-col gap-6 px-4 py-6 text-center">
+        <div class="flex-col gap-6 px-4 py-6 text-center hidden">
             <h1 class="text-2xl sm:text-3xl md:text-4xl">Spanish Oaks Golf Course</h1>
 
             <!-- container for front 9 and back 9 tables -->
@@ -26,7 +32,7 @@
 
                 <!-- front 9 - two tables, one for names and first 5 holes, one for holes 6-9 and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
-                <div id="front-9" class="w-full min-w-72 flex flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0">
+                <div id="front-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
                     <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black">
                         <tbody>
                             <tr>
@@ -103,7 +109,7 @@
 
                 <!-- back 9 - two tables, one for names and holes 10-14, one for last 4 holes and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
-                <div id="back-9" class="w-full min-w-72 flex flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0">
+                <div id="back-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
                     <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black lg:w-4/5">
                         <tbody>
                             <tr>
