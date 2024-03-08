@@ -69,13 +69,14 @@ function printCourseOptions(golfCourseId) {
                 }
             })
             document.getElementById("tee-list").innerHTML = courseTeesHtml;
+            return currentCourse;
         })
 
         // after all tees have been added to HTML, call function to add event listeners to select options
-        .then(() => selectTeeAndHoles(golfCourseId));
+        .then((currentCourse) => selectTeeAndHoles(currentCourse));
 }
     
-function selectTeeAndHoles(golfCourseId) {
+function selectTeeAndHoles(currentCourse) {
     // set variables for if the tee and holes have been picked and an array for which options were picked
     let teePicked = false;
     let holesPicked = false;
@@ -100,7 +101,7 @@ function selectTeeAndHoles(golfCourseId) {
             }
             
             // check if both options have been selected
-            checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId);
+            checkSelect(teePicked, holesPicked, optionsPicked, currentCourse);
         })
     })
 
@@ -117,24 +118,24 @@ function selectTeeAndHoles(golfCourseId) {
             }
             
             // check if both options have been selected
-            checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId);
+            checkSelect(teePicked, holesPicked, optionsPicked, currentCourse);
         })
     })
 }
 
-function checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId) {
+function checkSelect(teePicked, holesPicked, optionsPicked, currentCourse) {
     // if both tee and holes have been selected, hide course options HTML and call printScoreCard function
     if (teePicked === true && holesPicked === true) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
-        printScoreCard(optionsPicked, golfCourseId);
+        printScoreCard(optionsPicked, currentCourse);
     }
 }
             
-function printScoreCard(options, golfCourseId) {
+function printScoreCard(options, currentCourse) {
     // set variables for scorecard container div and both front 9 and back 9 divs
-    let scorecard = document.getElementById("scorecard")
+    let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
     let back9 = document.getElementById("back-9");
 
@@ -160,8 +161,13 @@ function printScoreCard(options, golfCourseId) {
         back9.classList.add("flex");
     }
 
-    //console log selected options array and id of selected golf course to make sure it's working properly
-    console.log(options, golfCourseId)
+    makeTable(options, currentCourse);
+}
+
+function makeTable(options, currentCourse) {
+    console.log(options, currentCourse);
+
+    document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
 }
 
 // call printCourses function to start chain of promises
