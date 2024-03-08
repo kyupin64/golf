@@ -9,13 +9,11 @@ function printCourses() {
             document.getElementById("course-select").classList.add("flex");
             document.getElementById("course-select").classList.remove("hidden");
 
-            // make string for HTML of courses, loop through each object in courses array
             let coursesHtml = "";
             courseList.forEach((course) => {
                 // add button to string with the course title and ID (and styles) for each course
                 coursesHtml += `<button id=${course.id} class="course-select-btn py-2 px-6 border-2 shadow-md w-full hover:bg-emerald-700 hover:text-white">${course.name}</button>`;
             });
-            // add string of HTML to course list HTML
             document.getElementById("course-list").innerHTML = coursesHtml;
         })
 
@@ -48,7 +46,6 @@ function printCourseOptions(golfCourseId) {
             let courseTees = currentCourse.holes[0].teeBoxes;
             let courseTeesHtml = "";
 
-            // loop through each tee in courseTees array
             courseTees.forEach((tee) => {
                 // check if teeType exists and that it's not just auto change location before doing anything with it
                 if (tee.teeType && tee.teeType !== "auto change location") {
@@ -71,81 +68,70 @@ function printCourseOptions(golfCourseId) {
                     courseTeesHtml += `<button id="${tee.teeType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
                 }
             })
-            // add string of HTML to course list HTML
             document.getElementById("tee-list").innerHTML = courseTeesHtml;
         })
 
-        // after all tees have been added to HTML, add event listeners to select options
-        .then(() => {
-            // set variables for if the tee and holes have been picked and an array for which options were picked
-            let teePicked = false;
-            let holesPicked = false;
-            let optionsPicked = ["tee", "holes"];
+        // after all tees have been added to HTML, call function to add event listeners to select options
+        .then(() => selectTeeAndHoles(golfCourseId));
+}
+    
+function selectTeeAndHoles(golfCourseId) {
+    // set variables for if the tee and holes have been picked and an array for which options were picked
+    let teePicked = false;
+    let holesPicked = false;
+    let optionsPicked = ["tee", "holes"];
 
-            // loop through each tee select button and add an event listener on click
-            document.querySelectorAll(".tee-select-btn").forEach((element) => {
-                element.addEventListener("click", () => {
-                    // check if the tee has already been picked and if not, set teePicked to true and add the id to the options array
-                    if (optionsPicked[0] === "tee") {
-                        teePicked = true;
-                        optionsPicked[0] = element.id;
+    document.querySelectorAll(".tee-select-btn").forEach((element) => {
+        element.addEventListener("click", () => {
+            // check if the tee has already been picked and if not, set teePicked to true and add the id to the options array
+            if (optionsPicked[0] === "tee") {
+                teePicked = true;
+                optionsPicked[0] = element.id;
 
-                        // initialize variables for colors so when clicked, the colors stay solid instead of on hover
-                        let bgColor, textColor;
+                // make variables for hover color classes so when clicked, the colors stay solid instead of on hover
+                let bgColor = element.classList[5];
+                let textColor = element.classList[6];
 
-                        // iterate through each class in the element and set the color variables to the hover classes with bg and text colors
-                        let classIterator = element.classList.entries();
-                        for (const value of classIterator) {
-                            if (value[0] === 5) {
-                                bgColor = value[1];
-                            }
-                            if (value[0] === 6) {
-                                textColor = value[1];
-                            }
-                        }
-
-                        // split the strings on ":" to get rid of hover modifier and add the solid colors to the classLists
-                        let newBgColor = bgColor.split(":")[1];
-                        let newTextColor = textColor.split(":")[1];
-                        element.classList.add(newBgColor);
-                        element.classList.add(newTextColor);
-                    }
-                    
-                    // if both tee and holes have been selected, hide course options HTML and call printScoreCard function
-                    if (teePicked === true && holesPicked === true) {
-                        document.getElementById("course-options").classList.remove("flex");
-                        document.getElementById("course-options").classList.add("hidden");
-                        
-                        printScoreCard(optionsPicked, golfCourseId);
-                    }
-                })
-            })
-
-            // loop through each hole select button and add an event listener on click
-            document.querySelectorAll(".hole-select-btn").forEach((element) => {
-                element.addEventListener("click", () => {
-                    // check if the holes have already been picked and if not, set holesPicked to true and add the innerHTML to the options array
-                    if (optionsPicked[1] === "holes") {
-                        holesPicked = true;
-                        optionsPicked[1] = element.innerHTML;
-                        
-                        // add solid color styles to hole select button after being clicked
-                        element.classList.add("bg-emerald-700");
-                        element.classList.add("text-white");
-                    }
-                    
-                    // if both tee and holes have been selected, hide course options HTML and call printScoreCard function
-                    if (teePicked === true && holesPicked === true) {
-                        document.getElementById("course-options").classList.remove("flex");
-                        document.getElementById("course-options").classList.add("hidden");
-                        
-                        printScoreCard(optionsPicked, golfCourseId);
-                    }
-                })
-            })
+                // split the strings on ":" to get rid of hover modifier and add the solid colors to the classLists
+                let newBgColor = bgColor.split(":")[1];
+                let newTextColor = textColor.split(":")[1];
+                element.classList.add(newBgColor);
+                element.classList.add(newTextColor);
+            }
+            
+            // check if both options have been selected
+            checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId);
         })
+    })
+
+    document.querySelectorAll(".hole-select-btn").forEach((element) => {
+        element.addEventListener("click", () => {
+            // check if the holes have already been picked and if not, set holesPicked to true and add the innerHTML to the options array
+            if (optionsPicked[1] === "holes") {
+                holesPicked = true;
+                optionsPicked[1] = element.innerHTML;
+                
+                // add solid color styles to hole select button after being clicked
+                element.classList.add("bg-emerald-700");
+                element.classList.add("text-white");
+            }
+            
+            // check if both options have been selected
+            checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId);
+        })
+    })
 }
 
+function checkSelect(teePicked, holesPicked, optionsPicked, golfCourseId) {
+    // if both tee and holes have been selected, hide course options HTML and call printScoreCard function
+    if (teePicked === true && holesPicked === true) {
+        document.getElementById("course-options").classList.remove("flex");
+        document.getElementById("course-options").classList.add("hidden");
+        
+        printScoreCard(optionsPicked, golfCourseId);
+    }
+}
+            
 function printScoreCard(options, golfCourseId) {
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard")
