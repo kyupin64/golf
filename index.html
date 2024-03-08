@@ -18,13 +18,25 @@
         </div>
 
         <!-- course selection screen -->
-        <div class="px-4 py-6 flex flex-col w-full items-center">
+        <div id="course-select" class="px-4 py-6 flex-col w-full items-center hidden">
             <h1 class="text-3xl sm:text-4xl">Pick a course:</h1>
             <div id="course-list" class="py-6 text-xl flex flex-col items-center gap-4"></div>
         </div>
 
+        <!-- current course options screen -->
+        <div id="course-options" class="px-4 py-6 flex-col w-full items-center hidden">
+            <h1 class="text-3xl sm:text-4xl">Select tee:</h1>
+            <div id="tee-list" class="py-6 text-xl flex flex-wrap justify-center gap-4 w-full"></div>
+            <h1 class="text-3xl sm:text-4xl">Select holes:</h1>
+            <div id="hole-list" class="py-6 text-xl flex flex-wrap justify-center gap-4 w-full">
+                <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">front 9</button>
+                <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">back 9</button>
+                <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">all 18</button>
+            </div>
+        </div>
+
         <!-- scorecard -->
-        <div class="flex-col gap-6 px-4 py-6 text-center hidden">
+        <div id="scorecard" class="flex-col gap-6 px-4 py-6 text-center hidden">
             <h1 class="text-2xl sm:text-3xl md:text-4xl">Spanish Oaks Golf Course</h1>
 
             <!-- container for front 9 and back 9 tables -->
