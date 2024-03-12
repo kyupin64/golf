@@ -65,7 +65,7 @@ function printCourseOptions(golfCourseId) {
                     }
 
                     // add button to string with the type and color (and styles) for each tee
-                    courseTeesHtml += `<button id="${tee.teeType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
+                    courseTeesHtml += `<button id="${tee.teeColorType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
                 }
             })
             document.getElementById("tee-list").innerHTML = courseTeesHtml;
@@ -165,9 +165,180 @@ function printScoreCard(options, currentCourse) {
 }
 
 function makeTable(options, currentCourse) {
-    console.log(options, currentCourse);
-
     document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
+
+    let tee = options[0];
+    let holes = options[1];
+
+    // get key of the correct tee
+    let hole0Tees = currentCourse.holes[0].teeBoxes;
+    let teeKey;
+    Object.keys(hole0Tees).forEach((key) => {
+        if (hole0Tees[key].teeColorType === tee) {
+            teeKey = key;
+        }
+    });
+
+    // call functions to print which holes were chosen
+    if (holes === "front 9") { printFront9(tee, holes, currentCourse, teeKey); }
+    else if (holes === "back 9") { printBack9(tee, holes, currentCourse, teeKey); }
+    else if (holes === "all 18") {
+        // make first column of back 9 hidden if printing all 18 and the screen is big enough
+        document.getElementById("hole-title").classList.add("lg:hidden");
+        document.getElementById("placeholder-title").classList.add("lg:hidden");
+
+        // call both front9 and back9 functions, plus the function to add totals
+        printFront9(tee, holes, currentCourse, teeKey);
+        printBack9(tee, holes, currentCourse, teeKey);
+        printTotals(tee, holes, currentCourse, teeKey);
+    }
+}
+
+function printFront9(tee, holes, currentCourse, teeKey) {
+    // set variable to tell functions which indexes of holes to print
+    let indexes = [0, 5, 9];
+    // get table elements from html and call functions to set tee yardage, handicap, and par rows
+    let first5TeeRow = document.querySelector("#front-9 table:first-child tbody tr:nth-child(2)");
+    let last4TeeRow = document.querySelector("#front-9 table:last-child tbody tr:nth-child(2)");
+    printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, holes, tee, teeKey, indexes, "front 9");
+
+    let first5HcpRow = document.querySelector("#front-9 table:first-child tbody tr:nth-child(3)");
+    let last4HcpRow = document.querySelector("#front-9 table:last-child tbody tr:nth-child(3)");
+    printHandicap(first5HcpRow, last4HcpRow, currentCourse, holes, teeKey, indexes, "front 9");
+
+    let first5ParRow = document.querySelector("#front-9 table:first-child tbody tr:last-child");
+    let last4ParRow = document.querySelector("#front-9 table:last-child tbody tr:last-child");
+    printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "front 9");
+}
+
+function printBack9(tee, holes, currentCourse, teeKey) {
+    // set variable to tell functions which indexes of holes to print
+    let indexes = [9, 14, 18];
+    // get table elements from html and call functions to set tee yardage, handicap, and par rows
+    let first5TeeRow = document.querySelector("#back-9 table:first-child tbody tr:nth-child(2)");
+    let last4TeeRow = document.querySelector("#back-9 table:last-child tbody tr:nth-child(2)");
+    printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, holes, tee, teeKey, indexes, "back 9");
+
+    let first5HcpRow = document.querySelector("#back-9 table:first-child tbody tr:nth-child(3)");
+    let last4HcpRow = document.querySelector("#back-9 table:last-child tbody tr:nth-child(3)");
+    printHandicap(first5HcpRow, last4HcpRow, currentCourse, holes, teeKey, indexes, "back 9");
+
+    let first5ParRow = document.querySelector("#back-9 table:first-child tbody tr:last-child");
+    let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
+    printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "back 9");
+}
+
+function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, teeKey, indexes, frontOrBack) {
+    tee = tee.toUpperCase();
+    first5TeeRow.innerHTML = `<td>${tee}</td>`;
+    // make first column of back 9 hidden if printing all 18 and the screen is big enough
+    if (frontOrBack === "back 9" && hole === "all 18") {
+        first5TeeRow.innerHTML = `<td class="lg:hidden">${tee}</td>`;
+    }
+    last4TeeRow.innerHTML = `<td class="sm:hidden">${tee}</td>`;
+
+    let currentYards = 0;
+    let totalYards = 0;
+
+    // loop through first 5 columns, then loop through last 4 to add yardage for each hole in current tee
+    for (i = indexes[0]; i < indexes[1]; i++) {
+        currentYards = currentCourse.holes[i].teeBoxes[teeKey].yards;
+        totalYards += currentYards;
+        first5TeeRow.innerHTML += `<td>${currentYards}</td>`;
+    }
+    for (i = indexes[1]; i < indexes[2]; i++) {
+        currentYards = currentCourse.holes[i].teeBoxes[teeKey].yards;
+        totalYards += currentYards;
+        last4TeeRow.innerHTML += `<td>${currentYards}</td>`;
+        // add total yardage in last column
+        if (i === 8) {
+            last4TeeRow.innerHTML += `<td id="total-yards-out">${totalYards}</td>`;
+        } else if (i === 17) {
+            last4TeeRow.innerHTML += `<td id="total-yards-in">${totalYards}</td>`;
+        }
+    }
+}
+
+function printHandicap(first5HcpRow, last4HcpRow, currentCourse, hole, teeKey, indexes, frontOrBack) {
+    first5HcpRow.innerHTML = `<td>HANDICAP</td>`;
+    // make first column of back 9 hidden if printing all 18 and the screen is big enough
+    if (frontOrBack === "back 9" && hole === "all 18") {
+        first5HcpRow.innerHTML = `<td class="lg:hidden">HANDICAP</td>`;
+    }
+    last4HcpRow.innerHTML = `<td class="sm:hidden">HANDICAP</td>`;
+
+    let hcp;
+
+    // loop through first 5 columns, then loop through last 4 to add handicap for each hole in current tee
+    for (i = indexes[0]; i < indexes[1]; i++) {
+        hcp = currentCourse.holes[i].teeBoxes[teeKey].hcp;
+        first5HcpRow.innerHTML += `<td>${hcp}</td>`;
+    }
+    for (i = indexes[1]; i < indexes[2]; i++) {
+        hcp = currentCourse.holes[i].teeBoxes[teeKey].hcp;
+        last4HcpRow.innerHTML += `<td>${hcp}</td>`;
+        if (i === 8 || i === 17) {
+            // add empty td element so border is consistent
+            last4HcpRow.innerHTML += `<td></td>`;
+        }
+    }
+}
+
+function printPar(first5ParRow, last4ParRow, currentCourse, hole, teeKey, indexes, frontOrBack) {
+    first5ParRow.innerHTML = `<td>PAR</td>`;
+    // make first column of back 9 hidden if printing all 18 and the screen is big enough
+    if (frontOrBack === "back 9" && hole === "all 18") {
+        first5ParRow.innerHTML = `<td class="lg:hidden">PAR</td>`;
+    }
+    last4ParRow.innerHTML = `<td class="sm:hidden">PAR</td>`;
+
+    let totalPar = 0;
+    let currentPar = 0;
+
+    // loop through first 5 columns, then loop through last 4 to add par for each hole in current tee
+    for (i = indexes[0]; i < indexes[1]; i++) {
+        currentPar = currentCourse.holes[i].teeBoxes[teeKey].par;
+        totalPar += currentPar;
+        first5ParRow.innerHTML += `<td>${currentPar}</td>`;
+    }
+    for (i = indexes[1]; i < indexes[2]; i++) {
+        currentPar = currentCourse.holes[i].teeBoxes[teeKey].par;
+        totalPar += currentPar;
+        last4ParRow.innerHTML += `<td>${currentPar}</td>`;
+        // add total par in last column
+        if (i === 8) {
+            last4ParRow.innerHTML += `<td id="total-par-out">${totalPar}</td>`;
+        } else if (i === 17) {
+            last4ParRow.innerHTML += `<td id="total-par-in">${totalPar}</td>`;
+        }
+    }
+}
+
+function printTotals() {
+    // get totals header td element and remove hidden class
+    let totalTitle = document.querySelector("#back-9 table:last-child tbody tr:first-child td:last-child");
+    totalTitle.classList.remove("hidden");
+
+    // get elements of rows containing totals column
+    let teeTotal = document.querySelector("#back-9 table:last-child tbody tr:nth-child(2)");
+    let hcpRow = document.querySelector("#back-9 table:last-child tbody tr:nth-child(3)");
+    let parTotal = document.querySelector("#back-9 table:last-child tbody tr:last-child");
+    
+    // get elements with yardage and par totals and add ins and outs together to get overall totals
+    let teeYardageOut = Number(document.getElementById("total-yards-out").innerHTML);
+    let teeYardageIn = Number(document.getElementById("total-yards-in").innerHTML);
+    let parOut = Number(document.getElementById("total-par-out").innerHTML);
+    let parIn = Number(document.getElementById("total-par-in").innerHTML);
+
+    let totalYards = teeYardageOut + teeYardageIn;
+    let totalPar = parOut + parIn;
+
+    // add those totals to the html, add empty td element to handicap row so border is consistent
+    teeTotal.innerHTML += `<td>${totalYards}</td>`;
+    parTotal.innerHTML += `<td>${totalPar}</td>`;
+    hcpRow.innerHTML += `<td></td>`
+
+    
 }
 
 // call printCourses function to start chain of promises
