@@ -9,7 +9,16 @@
     <script defer src="script.js"></script>
 </head>
 <body>
-    <div id="container">
+    <div id="container" class="relative">
+
+        <!-- "stroke input box" -->
+        <div id="stroke-input" class="absolute top-40 w-full justify-center z-20 hidden">
+            <div class="p-3 w-52 flex flex-col items-center gap-3 bg-emerald-700 shadow-xl">
+                <p class="text-center text-xl w-36 text-white">Lauren's strokes for hole 14:</p>
+                <input type="number" class="px-2 py-1 w-36 max-w-full border-2 shadow-md"">
+                <div id="buttons-container" class="flex gap-10 justify-center"></div>
+            </div>
+        </div>
 
         <!-- header -->
         <div class="flex w-full justify-between items-center py-4 px-6 bg-emerald-700 text-white">
@@ -52,7 +61,7 @@
                 <!-- front 9 - two tables, one for names and first 5 holes, one for holes 6-9 and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
                 <div id="front-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
-                    <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black">
+                    <table id="first-5-front-9" class="border-collapse w-full *:*:*:border-2 *:*:*:border-black">
                         <tbody>
                             <tr>
                                 <td>HOLE</td>
@@ -67,7 +76,7 @@
                             <tr></tr>
                         </tbody>
                     </table>
-                    <table class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-2/3">
+                    <table id="last-4-front-9" class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-2/3">
                         <tbody>
                             <tr>
                                 <td class="sm:hidden">HOLE</td>
@@ -87,7 +96,7 @@
                 <!-- back 9 - two tables, one for names and holes 10-14, one for last 4 holes and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
                 <div id="back-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
-                    <table class="border-collapse w-full *:*:*:border-2 *:*:*:border-black lg:w-4/5">
+                    <table id="first-5-back-9" class="border-collapse w-full *:*:*:border-2 *:*:*:border-black lg:w-4/5">
                         <tbody>
                             <tr>
                                 <td id="hole-title">HOLE</td>
@@ -102,7 +111,7 @@
                             <tr></tr>
                         </tbody>
                     </table>
-                    <table class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-4/5 lg:w-full">
+                    <table id="last-4-back-9" class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-4/5 lg:w-full">
                         <tbody>
                             <tr>
                                 <td class="sm:hidden">HOLE</td>

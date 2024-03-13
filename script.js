@@ -221,6 +221,9 @@ function printFront9(tee, holes, players, currentCourse, teeKey) {
     let last4ParRow = document.querySelector("#front-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "front 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "front 9");
+    if (holes !== "all 18") {
+        addStrokeEvent(players);
+    }
 }
 
 function printBack9(tee, holes, players, currentCourse, teeKey) {
@@ -239,6 +242,7 @@ function printBack9(tee, holes, players, currentCourse, teeKey) {
     let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "back 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "back 9");
+    addStrokeEvent(players);
 }
 
 function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, teeKey, indexes, frontOrBack) {
@@ -350,10 +354,10 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
         // loop through first 5 columns, then loop through last 4 to add empty td elements for stroke inputs for each hole
         for (i = indexes[0]; i < indexes[1]; i++) {
-            first5PlayerRow.innerHTML += `<td></td>`;
+            first5PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-green-400"></td>`;
         }
         for (i = indexes[1]; i < indexes[2]; i++) {
-            last4PlayerRow.innerHTML += `<td></td>`;
+            last4PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-green-400"></td>`;
             // add space for total strokes in last column
             if (i === 8) {
                 last4PlayerRow.innerHTML += `<td id="${player}-strokes-out"></td>`;
@@ -365,6 +369,50 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
             }
         }
     })
+}
+
+function addStrokeEvent(players) {
+    players.forEach((player => {
+        let strokeInputs = document.querySelectorAll(`.${player}-row .stroke-input`);
+
+        // loop through the inputs for each player's strokes on each hole
+        strokeInputs.forEach((box) => {
+            box.addEventListener("click", (e) => {
+                let element = e.currentTarget;
+
+                // get the second class in the parent's classlist and get rid of the "-row" to get the player's name
+                let player = element.parentNode.classList[1].split("-")[0];
+
+                // get the container for the stroke input popup box and the p tag under it
+                // then remove the "hidden" class to show the box
+                let strokeInputContainer = document.getElementById("stroke-input");
+                let strokeInputP = document.querySelector("#stroke-input p");
+                strokeInputContainer.classList.remove("hidden");
+                strokeInputContainer.classList.add("flex");
+                
+                // check which table the target is in and adjust the cellIndex accordingly to get the hole number
+                let idx;
+                let tableContainer = element.parentElement.parentElement.parentElement;
+                if (tableContainer.id === "first-5-front-9") {
+                    idx = element.cellIndex;
+                } else if (tableContainer.id === "last-4-front-9") {
+                    idx = element.cellIndex + 5;
+                } else if (tableContainer.id === "first-5-back-9") {
+                    idx = element.cellIndex + 9;
+                } else if (tableContainer.id === "last-4-back-9") {
+                    idx = element.cellIndex + 14;
+                }
+                // add player and index to paragraph tag so the user knows exactly what they're inputting
+                strokeInputP.innerHTML = `${player}'s strokes for hole ${idx}`;
+
+                addButtons(element, strokeInputContainer);
+            })
+        })
+    }))
+}
+
+function addButtons(element, strokeInputContainer) {
+
 }
 
 function printTotals() {
