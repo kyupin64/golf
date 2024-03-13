@@ -173,10 +173,10 @@ function printScoreCard(options, players, currentCourse) {
         back9.classList.add("flex");
     }
 
-    makeTable(options, currentCourse);
+    makeTable(options, players, currentCourse);
 }
 
-function makeTable(options, currentCourse) {
+function makeTable(options, players, currentCourse) {
     document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
 
     let tee = options[0];
@@ -192,21 +192,20 @@ function makeTable(options, currentCourse) {
     });
 
     // call functions to print which holes were chosen
-    if (holes === "front 9") { printFront9(tee, holes, currentCourse, teeKey); }
-    else if (holes === "back 9") { printBack9(tee, holes, currentCourse, teeKey); }
+    if (holes === "front 9") { printFront9(tee, holes, players, currentCourse, teeKey); }
+    else if (holes === "back 9") { printBack9(tee, holes, players, currentCourse, teeKey); }
     else if (holes === "all 18") {
         // make first column of back 9 hidden if printing all 18 and the screen is big enough
         document.getElementById("hole-title").classList.add("lg:hidden");
-        document.getElementById("placeholder-title").classList.add("lg:hidden");
 
         // call both front9 and back9 functions, plus the function to add totals
-        printFront9(tee, holes, currentCourse, teeKey);
-        printBack9(tee, holes, currentCourse, teeKey);
-        printTotals(tee, holes, currentCourse, teeKey);
+        printFront9(tee, holes, players, currentCourse, teeKey);
+        printBack9(tee, holes, players, currentCourse, teeKey);
+        printTotals();
     }
 }
 
-function printFront9(tee, holes, currentCourse, teeKey) {
+function printFront9(tee, holes, players, currentCourse, teeKey) {
     // set variable to tell functions which indexes of holes to print
     let indexes = [0, 5, 9];
     // get table elements from html and call functions to set tee yardage, handicap, and par rows
@@ -221,9 +220,10 @@ function printFront9(tee, holes, currentCourse, teeKey) {
     let first5ParRow = document.querySelector("#front-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#front-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "front 9");
+    printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "front 9");
 }
 
-function printBack9(tee, holes, currentCourse, teeKey) {
+function printBack9(tee, holes, players, currentCourse, teeKey) {
     // set variable to tell functions which indexes of holes to print
     let indexes = [9, 14, 18];
     // get table elements from html and call functions to set tee yardage, handicap, and par rows
@@ -238,6 +238,7 @@ function printBack9(tee, holes, currentCourse, teeKey) {
     let first5ParRow = document.querySelector("#back-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "back 9");
+    printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "back 9");
 }
 
 function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, teeKey, indexes, frontOrBack) {
@@ -324,6 +325,46 @@ function printPar(first5ParRow, last4ParRow, currentCourse, hole, teeKey, indexe
             last4ParRow.innerHTML += `<td id="total-par-in">${totalPar}</td>`;
         }
     }
+}
+
+function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOrBack) {
+    players.forEach((player) => {
+        // add new row elements for each player and put them above the par row
+        let first5PlayerRow = document.createElement("tr");
+        let last4PlayerRow = document.createElement("tr");
+        first5ParRow.before(first5PlayerRow);
+        last4ParRow.before(last4PlayerRow);
+
+        // make player rows slightly taller and give each one a class to make it easier to find later
+        first5PlayerRow.classList.add("h-10");
+        first5PlayerRow.classList.add(`${player}-row`);
+        last4PlayerRow.classList.add("h-10");
+        last4PlayerRow.classList.add(`${player}-row`);
+
+        first5PlayerRow.innerHTML = `<td class="font-bold">${player}</td>`;
+        // make first column of back 9 hidden if printing all 18 and the screen is big enough
+        if (frontOrBack === "back 9" && hole === "all 18") {
+            first5PlayerRow.innerHTML = `<td class="lg:hidden font-bold">${player}</td>`;
+        }
+        last4PlayerRow.innerHTML = `<td class="sm:hidden font-bold">${player}</td>`;
+
+        // loop through first 5 columns, then loop through last 4 to add empty td elements for stroke inputs for each hole
+        for (i = indexes[0]; i < indexes[1]; i++) {
+            first5PlayerRow.innerHTML += `<td></td>`;
+        }
+        for (i = indexes[1]; i < indexes[2]; i++) {
+            last4PlayerRow.innerHTML += `<td></td>`;
+            // add space for total strokes in last column
+            if (i === 8) {
+                last4PlayerRow.innerHTML += `<td id="${player}-strokes-out"></td>`;
+            } else if (i === 17) {
+                last4PlayerRow.innerHTML += `<td id="${player}-strokes-in"></td>`;
+            }
+            if (i === 17 && hole === "all 18") {
+                last4PlayerRow.innerHTML += `<td id="${player}-total-strokes"></td>`;
+            }
+        }
+    })
 }
 
 function printTotals() {
