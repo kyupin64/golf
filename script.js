@@ -77,10 +77,13 @@ function printCourseOptions(golfCourseId) {
 }
     
 function selectTeeAndHoles(currentCourse) {
-    // set variables for if the tee and holes have been picked and an array for which options were picked
+    // set variables for if the tee and holes have been picked, an array for which options were picked, and a players array
     let teePicked = false;
     let holesPicked = false;
     let optionsPicked = ["tee", "holes"];
+    let players = [];
+    // make sure player input field starts blank
+    document.querySelector("#add-player-input input").value = "";
 
     document.querySelectorAll(".tee-select-btn").forEach((element) => {
         element.addEventListener("click", () => {
@@ -99,9 +102,6 @@ function selectTeeAndHoles(currentCourse) {
                 element.classList.add(newBgColor);
                 element.classList.add(newTextColor);
             }
-            
-            // check if both options have been selected
-            checkSelect(teePicked, holesPicked, optionsPicked, currentCourse);
         })
     })
 
@@ -116,24 +116,36 @@ function selectTeeAndHoles(currentCourse) {
                 element.classList.add("bg-emerald-700");
                 element.classList.add("text-white");
             }
-            
-            // check if both options have been selected
-            checkSelect(teePicked, holesPicked, optionsPicked, currentCourse);
         })
+    })
+
+    document.querySelector("#add-player-input button").addEventListener("click", () => {
+        let name = document.querySelector("#add-player-input input").value;
+        // if the input field has text in it, add text to players array and html player list, set input value back to empty
+        if (name) {
+            players.push(name);
+            document.getElementById("player-list").innerHTML += `<li>${name}</li>`;
+            document.querySelector("#add-player-input input").value = "";
+        }
+    })
+
+    document.getElementById("continue-btn").addEventListener("click", () => {
+        // check if both options have been selected and if at least one player has been added
+        checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse);
     })
 }
 
-function checkSelect(teePicked, holesPicked, optionsPicked, currentCourse) {
-    // if both tee and holes have been selected, hide course options HTML and call printScoreCard function
-    if (teePicked === true && holesPicked === true) {
+function checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse) {
+    // if both tee and holes have been selected and at least one player added, hide course options HTML and call printScoreCard function
+    if (teePicked === true && holesPicked === true && players[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
-        printScoreCard(optionsPicked, currentCourse);
+        printScoreCard(optionsPicked, players, currentCourse);
     }
 }
             
-function printScoreCard(options, currentCourse) {
+function printScoreCard(options, players, currentCourse) {
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -337,8 +349,6 @@ function printTotals() {
     teeTotal.innerHTML += `<td>${totalYards}</td>`;
     parTotal.innerHTML += `<td>${totalPar}</td>`;
     hcpRow.innerHTML += `<td></td>`
-
-    
 }
 
 // call printCourses function to start chain of promises

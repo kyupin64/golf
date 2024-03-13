@@ -24,7 +24,7 @@
         </div>
 
         <!-- current course options screen -->
-        <div id="course-options" class="px-4 py-6 flex-col w-full items-center hidden">
+        <div id="course-options" class="px-4 pt-6 pb-28 flex-col w-full items-center hidden">
             <h1 class="text-3xl sm:text-4xl">Select tee:</h1>
             <div id="tee-list" class="py-6 text-xl flex flex-wrap justify-center gap-4 w-full"></div>
             <h1 class="text-3xl sm:text-4xl">Select holes:</h1>
@@ -33,6 +33,13 @@
                 <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">back 9</button>
                 <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">all 18</button>
             </div>
+            <h1 class="text-3xl sm:text-4xl">Add players:</h1>
+            <div id="add-player-input" class="py-6 text-xl flex flex-wrap justify-center gap-4 w-full">
+                <input placeholder="Name" class="px-2 w-48 max-w-full border-2 shadow-md">
+                <button class="pt-1 pb-1.5 px-3 border-2 shadow-md hover:bg-emerald-700 hover:text-white">+</button>
+            </div>
+            <ul id="player-list" class="pb-10 text-xl list-disc"></ul>
+            <button id="continue-btn" class="py-2 px-6 text-2xl border-2 shadow-md hover:bg-emerald-700 hover:text-white">Continue</button>
         </div>
 
         <!-- scorecard -->
