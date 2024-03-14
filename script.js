@@ -222,7 +222,7 @@ function printFront9(tee, holes, players, currentCourse, teeKey) {
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "front 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "front 9");
     if (holes !== "all 18") {
-        addStrokeEvent(players);
+        addStrokeEvent(players, holes);
     }
 }
 
@@ -242,7 +242,7 @@ function printBack9(tee, holes, players, currentCourse, teeKey) {
     let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "back 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "back 9");
-    addStrokeEvent(players);
+    addStrokeEvent(players, holes);
 }
 
 function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, teeKey, indexes, frontOrBack) {
@@ -371,7 +371,7 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
     })
 }
 
-function addStrokeEvent(players) {
+function addStrokeEvent(players, holes) {
     players.forEach((player => {
         let strokeInputs = document.querySelectorAll(`.${player}-row .stroke-input`);
 
@@ -405,13 +405,13 @@ function addStrokeEvent(players) {
                 // add player and index to paragraph tag so the user knows exactly what they're inputting
                 strokeInputP.innerHTML = `${player}'s strokes for hole ${idx}`;
 
-                addButtons(element, strokeInputContainer);
+                addButtons(element, strokeInputContainer, player, holes);
             })
         })
     }))
 }
 
-function addButtons(element, strokeInputContainer) {
+function addButtons(element, strokeInputContainer, player, holes) {
     // add buttons to go back or confirm stroke input
     let buttonsContainer = document.getElementById("buttons-container");
     let goBackBtnHtml = `<button id="go-back-btn" class="py-0.5 px-2 border-2 shadow-md bg-white hover:bg-red-700 hover:text-white hover:border-white">Go Back</button>`;
@@ -439,8 +439,37 @@ function addButtons(element, strokeInputContainer) {
             strokeInputContainer.classList.remove("flex");
             strokeInputContainer.classList.add("hidden");
             element.innerHTML = strokeInputNum;
+            printStrokeTotals(player, holes);
         }
     });
+}
+
+function printStrokeTotals(player, holes) {
+    // calculate and print the in and out totals, plus the the total of both
+    if (holes === "front 9") {
+        calcStrokeTotals(player, "front-9", "out");
+    } else if (holes === "back 9") {
+        calcStrokeTotals(player, "back-9", "in");
+    } else {
+        // calculate both front 9 and back 9 totals then add them to get the grand total
+        calcStrokeTotals(player, "front-9", "out");
+        calcStrokeTotals(player, "back-9", "in");
+        let strokesOut = Number(document.getElementById(`${player}-strokes-out`).innerHTML);
+        let strokesIn = Number(document.getElementById(`${player}-strokes-in`).innerHTML);
+        document.getElementById(`${player}-total-strokes`).innerHTML = strokesOut + strokesIn;
+    }
+}
+
+function calcStrokeTotals(player, frontOrBack, inOrOut) {
+    // get array of all stroke input boxes in either front 9 or back 9, loop through each and add to total
+    let playerStrokes = document.querySelectorAll(`#${frontOrBack} .${player}-row .stroke-input`);
+    let strokeTotals = 0;
+    playerStrokes.forEach((strokeNode) => {
+        strokeTotals += Number(strokeNode.innerHTML);
+    });
+    if (strokeTotals !== 0) {
+        document.getElementById(`${player}-strokes-${inOrOut}`).innerHTML = strokeTotals;
+    }
 }
 
 function printTotals() {
