@@ -354,10 +354,10 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
         // loop through first 5 columns, then loop through last 4 to add empty td elements for stroke inputs for each hole
         for (i = indexes[0]; i < indexes[1]; i++) {
-            first5PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-green-400"></td>`;
+            first5PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-emerald-100"></td>`;
         }
         for (i = indexes[1]; i < indexes[2]; i++) {
-            last4PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-green-400"></td>`;
+            last4PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-emerald-100"></td>`;
             // add space for total strokes in last column
             if (i === 8) {
                 last4PlayerRow.innerHTML += `<td id="${player}-strokes-out"></td>`;
@@ -385,8 +385,8 @@ function addStrokeEvent(players) {
 
                 // get the container for the stroke input popup box and the p tag under it
                 // then remove the "hidden" class to show the box
-                let strokeInputContainer = document.getElementById("stroke-input");
-                let strokeInputP = document.querySelector("#stroke-input p");
+                let strokeInputContainer = document.getElementById("stroke-input-container");
+                let strokeInputP = document.querySelector("#stroke-input-container p");
                 strokeInputContainer.classList.remove("hidden");
                 strokeInputContainer.classList.add("flex");
                 
@@ -412,7 +412,35 @@ function addStrokeEvent(players) {
 }
 
 function addButtons(element, strokeInputContainer) {
+    // add buttons to go back or confirm stroke input
+    let buttonsContainer = document.getElementById("buttons-container");
+    let goBackBtnHtml = `<button id="go-back-btn" class="py-0.5 px-2 border-2 shadow-md bg-white hover:bg-red-700 hover:text-white hover:border-white">Go Back</button>`;
+    let confirmBtnHtml = `<button id="confirm-btn" class="py-0.5 px-2 border-2 shadow-md bg-white hover:bg-sky-700 hover:text-white hover:border-white">Confirm</button>`;
+    buttonsContainer.innerHTML = `${goBackBtnHtml}${confirmBtnHtml}`;
 
+    // set variables for buttons and input field, clear input field
+    let goBackBtn = document.querySelector("#buttons-container #go-back-btn");
+    let confirmBtn = document.querySelector("#buttons-container #confirm-btn");
+    let strokeInputField = document.querySelector("#stroke-input-container input");
+    strokeInputField.value = "";
+
+    // if go back button is clicked, clear buttons and hide input popup box
+    goBackBtn.addEventListener("click", () => {
+        buttonsContainer.innerHTML = "";
+        strokeInputContainer.classList.remove("flex");
+        strokeInputContainer.classList.add("hidden");
+    });
+
+    // if confirm button is clicked, clear buttons, hide input popup box, and add number to html
+    confirmBtn.addEventListener("click", () => {
+        let strokeInputNum = Number(strokeInputField.value);
+        if (strokeInputNum > 0) {
+            buttonsContainer.innerHTML = "";
+            strokeInputContainer.classList.remove("flex");
+            strokeInputContainer.classList.add("hidden");
+            element.innerHTML = strokeInputNum;
+        }
+    });
 }
 
 function printTotals() {
