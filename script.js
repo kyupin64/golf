@@ -1,8 +1,50 @@
-function printCourses() {
-    // get golf courses API, return promise of JS (array with each course object)
-    fetch("https://exquisite-pastelito-9d4dd1.netlify.app/golfapi/courses.json")
-        .then(response => response.json())
+let scorecards = [];
+let id = 0;
 
+class ScoreCard {
+    id = getNewId();
+    players = [];
+
+    constructor(courseId, tee, holes) {
+        this.courseId = courseId;
+        this.tee = tee;
+        this.holes = holes;
+        this.name = this.courseId;
+    }
+}
+
+class Player {
+    strokesOut = { hole1: undefined, hole2: undefined, hole3: undefined, hole4: undefined, hole5: undefined, 
+        hole6: undefined, hole7: undefined, hole8: undefined, hole9: undefined }
+
+    strokesIn = { hole10: undefined, hole11: undefined, hole12: undefined, hole13: undefined, hole14: undefined, 
+        hole15: undefined, hole16: undefined, hole17: undefined, hole18: undefined }
+
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+function getNewId() {
+    let newId = id;
+    id++;
+    return newId;
+}
+
+function getCourses() {
+    // get golf courses API, return promise of JS (array with each course object)
+    return fetch("https://exquisite-pastelito-9d4dd1.netlify.app/golfapi/courses.json")
+        .then(response => response.json())
+}
+
+function getCurrentCourse(golfCourseId) {
+    // get API for golf course that was clicked, return promise with course object JS
+    return fetch(`https://exquisite-pastelito-9d4dd1.netlify.app/golfapi/course${golfCourseId}.json`)
+        .then(response => response.json())
+}
+
+function printCourses() {
+    getCourses()
         // get array of each course object from previous promise, pass array to new function
         .then(courseList => {
             // show course selection HTML
@@ -32,10 +74,7 @@ function printCourses() {
 }
 
 function printCourseOptions(golfCourseId) {
-    // get API for golf course that was clicked, return promise with course object JS
-    fetch(`https://exquisite-pastelito-9d4dd1.netlify.app/golfapi/course${golfCourseId}.json`)
-        .then(response => response.json())
-
+    getCurrentCourse(golfCourseId)
         // get current course object from previous promise, pass object to new function
         .then(currentCourse => {
             // show current course options HTML
