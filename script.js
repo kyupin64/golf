@@ -1,24 +1,28 @@
-let scorecards = [];
+let scoreCards = [];
 let id = 0;
 
 class ScoreCard {
     id = getNewId();
     players = [];
 
-    constructor(courseId, tee, holes) {
+    constructor(courseId, tee, holes, name) {
         this.courseId = courseId;
         this.tee = tee;
         this.holes = holes;
-        this.name = this.courseId;
+        this.name = `${name} (${holes} holes, unnamed)`;
     }
 }
 
 class Player {
-    strokesOut = { hole1: undefined, hole2: undefined, hole3: undefined, hole4: undefined, hole5: undefined, 
+    outStrokes = { hole1: undefined, hole2: undefined, hole3: undefined, hole4: undefined, hole5: undefined, 
         hole6: undefined, hole7: undefined, hole8: undefined, hole9: undefined }
 
-    strokesIn = { hole10: undefined, hole11: undefined, hole12: undefined, hole13: undefined, hole14: undefined, 
+    inStrokes = { hole10: undefined, hole11: undefined, hole12: undefined, hole13: undefined, hole14: undefined, 
         hole15: undefined, hole16: undefined, hole17: undefined, hole18: undefined }
+
+    outTotal;
+    inTotal;
+    allTotal;
 
     constructor(name) {
         this.name = name;
@@ -175,16 +179,24 @@ function selectTeeAndHoles(currentCourse) {
 }
 
 function checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse) {
-    // if both tee and holes have been selected and at least one player added, hide course options HTML and call printScoreCard function
+    // if both tee and holes have been selected and at least one player added, hide course options HTML;
+    // add info, options, and players to new scorecard object; and call printScoreCard function
     if (teePicked === true && holesPicked === true && players[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
-        printScoreCard(optionsPicked, players, currentCourse);
+        let newScoreCard = new ScoreCard(currentCourse.id, optionsPicked[0], optionsPicked[1], currentCourse.name);
+        players.forEach((player) => {
+            let newPlayer = new Player(player);
+            newScoreCard.players.push(newPlayer);
+        })
+        scoreCards.push(newScoreCard);
+        
+        printScoreCard(newScoreCard, currentCourse);
     }
 }
             
-function printScoreCard(options, players, currentCourse) {
+function printScoreCard(currentScoreCard, currentCourse) {
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -195,12 +207,12 @@ function printScoreCard(options, players, currentCourse) {
     scorecard.classList.add("flex");
 
     // if front 9 was selected, only show front 9 table
-    if (options[1] === "front 9") {
+    if (currentScoreCard.holes === "front 9") {
         front9.classList.remove("hidden");
         front9.classList.add("flex");
     } 
     // if back 9 was selected, only show back 9 table
-    else if (options[1] === "back 9") {
+    else if (currentScoreCard.holes === "back 9") {
         back9.classList.remove("hidden");
         back9.classList.add("flex");
     }
@@ -212,14 +224,15 @@ function printScoreCard(options, players, currentCourse) {
         back9.classList.add("flex");
     }
 
-    makeTable(options, players, currentCourse);
+    makeTable(currentScoreCard, currentCourse);
 }
 
-function makeTable(options, players, currentCourse) {
+function makeTable(currentScoreCard, currentCourse) {
     document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
 
-    let tee = options[0];
-    let holes = options[1];
+    let tee = currentScoreCard.tee;
+    let holes = currentScoreCard.holes;
+    let players = currentScoreCard.players;
 
     // get key of the correct tee
     let hole0Tees = currentCourse.holes[0].teeBoxes;
@@ -380,16 +393,16 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
         // make player rows slightly taller and give each one a class to make it easier to find later
         first5PlayerRow.classList.add("h-10");
-        first5PlayerRow.classList.add(`${player}-row`);
+        first5PlayerRow.classList.add(`${player.name}-row`);
         last4PlayerRow.classList.add("h-10");
-        last4PlayerRow.classList.add(`${player}-row`);
+        last4PlayerRow.classList.add(`${player.name}-row`);
 
-        first5PlayerRow.innerHTML = `<td class="font-bold">${player}</td>`;
+        first5PlayerRow.innerHTML = `<td class="font-bold">${player.name}</td>`;
         // make first column of back 9 hidden if printing all 18 and the screen is big enough
         if (frontOrBack === "back 9" && hole === "all 18") {
-            first5PlayerRow.innerHTML = `<td class="lg:hidden font-bold">${player}</td>`;
+            first5PlayerRow.innerHTML = `<td class="lg:hidden font-bold">${player.name}</td>`;
         }
-        last4PlayerRow.innerHTML = `<td class="sm:hidden font-bold">${player}</td>`;
+        last4PlayerRow.innerHTML = `<td class="sm:hidden font-bold">${player.name}</td>`;
 
         // loop through first 5 columns, then loop through last 4 to add empty td elements for stroke inputs for each hole
         for (i = indexes[0]; i < indexes[1]; i++) {
@@ -399,12 +412,12 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
             last4PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-emerald-100"></td>`;
             // add space for total strokes in last column
             if (i === 8) {
-                last4PlayerRow.innerHTML += `<td id="${player}-strokes-out"></td>`;
+                last4PlayerRow.innerHTML += `<td id="${player.name}-strokes-out"></td>`;
             } else if (i === 17) {
-                last4PlayerRow.innerHTML += `<td id="${player}-strokes-in"></td>`;
+                last4PlayerRow.innerHTML += `<td id="${player.name}-strokes-in"></td>`;
             }
             if (i === 17 && hole === "all 18") {
-                last4PlayerRow.innerHTML += `<td id="${player}-total-strokes"></td>`;
+                last4PlayerRow.innerHTML += `<td id="${player.name}-total-strokes"></td>`;
             }
         }
     })
@@ -412,15 +425,12 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
 function addStrokeEvent(players, holes) {
     players.forEach((player => {
-        let strokeInputs = document.querySelectorAll(`.${player}-row .stroke-input`);
+        let strokeInputs = document.querySelectorAll(`.${player.name}-row .stroke-input`);
 
-        // loop through the inputs for each player's strokes on each hole
+        // loop through the inputs for each player's strokes on each hole and add events to each box
         strokeInputs.forEach((box) => {
             box.addEventListener("click", (e) => {
                 let element = e.currentTarget;
-
-                // get the second class in the parent's classlist and get rid of the "-row" to get the player's name
-                let player = element.parentNode.classList[1].split("-")[0];
 
                 // get the container for the stroke input popup box and the p tag under it
                 // then remove the "hidden" class to show the box
@@ -441,16 +451,16 @@ function addStrokeEvent(players, holes) {
                 } else if (tableContainer.id === "last-4-back-9") {
                     idx = element.cellIndex + 14;
                 }
-                // add player and index to paragraph tag so the user knows exactly what they're inputting
-                strokeInputP.innerHTML = `${player}'s strokes for hole ${idx}`;
+                // add player name and index to paragraph tag so the user knows exactly what they're inputting
+                strokeInputP.innerHTML = `${player.name}'s strokes for hole ${idx}`;
 
-                addButtons(element, strokeInputContainer, player, holes);
+                makeButtons(element, idx, strokeInputContainer, player, holes);
             })
         })
     }))
 }
 
-function addButtons(element, strokeInputContainer, player, holes) {
+function makeButtons(element, holeNum, strokeInputContainer, player, holes) {
     // add buttons to go back or confirm stroke input
     let buttonsContainer = document.getElementById("buttons-container");
     let goBackBtnHtml = `<button id="go-back-btn" class="py-0.5 px-2 border-2 shadow-md bg-white hover:bg-red-700 hover:text-white hover:border-white">Go Back</button>`;
@@ -478,36 +488,55 @@ function addButtons(element, strokeInputContainer, player, holes) {
             strokeInputContainer.classList.remove("flex");
             strokeInputContainer.classList.add("hidden");
             element.innerHTML = strokeInputNum;
+
+            // add number to correct hole key in player object
+            let currentHole = `hole${holeNum}`;
+            if (holeNum <= 9) {
+                player.outStrokes[currentHole] = strokeInputNum;
+            } else if (holeNum >= 10) {
+                player.inStrokes[currentHole] = strokeInputNum;
+            }
+
             printStrokeTotals(player, holes);
         }
     });
 }
 
 function printStrokeTotals(player, holes) {
-    // calculate and print the in and out totals, plus the the total of both
+    // call function to calculate and print the front 9 and back 9 totals
     if (holes === "front 9") {
-        calcStrokeTotals(player, "front-9", "out");
+        calcStrokeTotals(player, "out");
     } else if (holes === "back 9") {
-        calcStrokeTotals(player, "back-9", "in");
+        calcStrokeTotals(player, "in");
     } else {
-        // calculate both front 9 and back 9 totals then add them to get the grand total
-        calcStrokeTotals(player, "front-9", "out");
-        calcStrokeTotals(player, "back-9", "in");
-        let strokesOut = Number(document.getElementById(`${player}-strokes-out`).innerHTML);
-        let strokesIn = Number(document.getElementById(`${player}-strokes-in`).innerHTML);
-        document.getElementById(`${player}-total-strokes`).innerHTML = strokesOut + strokesIn;
+        // call function to calculate and print both front 9 and back 9 totals
+        calcStrokeTotals(player, "out");
+        calcStrokeTotals(player, "in");
+        
+        // add sum of both totals to object and print grand total
+        player.allTotal = player.outTotal + player.inTotal;
+        if (player.allTotal && player.allTotal !== 0) {
+            document.getElementById(`${player.name}-total-strokes`).innerHTML = player.allTotal;
+        }
     }
 }
 
-function calcStrokeTotals(player, frontOrBack, inOrOut) {
-    // get array of all stroke input boxes in either front 9 or back 9, loop through each and add to total
-    let playerStrokes = document.querySelectorAll(`#${frontOrBack} .${player}-row .stroke-input`);
+function calcStrokeTotals(player, inOrOut) {
+    // get array of all stroke values in player object in either front 9 or back 9, loop through each and add to total
+    let strokesArr = Object.values(player[`${inOrOut}Strokes`]);
     let strokeTotals = 0;
-    playerStrokes.forEach((strokeNode) => {
-        strokeTotals += Number(strokeNode.innerHTML);
+
+    strokesArr.forEach((stroke) => {
+        if (stroke) {
+            strokeTotals += stroke;
+        }
     });
-    if (strokeTotals !== 0) {
-        document.getElementById(`${player}-strokes-${inOrOut}`).innerHTML = strokeTotals;
+
+    // add total to object and print if it exists and is not 0
+    player[`${inOrOut}Total`] = strokeTotals;
+
+    if (player[`${inOrOut}Total`] && player[`${inOrOut}Total`] !== 0) {
+        document.getElementById(`${player.name}-strokes-${inOrOut}`).innerHTML = player[`${inOrOut}Total`];
     }
 }
 
