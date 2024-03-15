@@ -21,10 +21,16 @@
         </div>
 
         <!-- header -->
-        <div class="flex w-full justify-between items-center py-4 px-6 bg-emerald-700 text-white">
-            <h2 class="text-xl">Simple Score</h2>
-            <button id="nav-button"><i class="fa-solid fa-bars"></i></button>
+        <div class="flex flex-col p-2 bg-emerald-700 text-white">
+            <div id="header" class="flex w-full py-2 px-6 justify-between items-center">
+                <h2 class="text-xl">Simple Score</h2>
+                <button id="nav-button"><i class="fa-solid fa-bars"></i></button>
+            </div>
+
+            <!-- saved scorecards menu -->
+            <div id="scorecard-menu" class="p-4 flex-col gap-4 w-full justify-between items-center bg-white text-black hidden"></div>
         </div>
+
 
         <!-- course selection screen -->
         <div id="course-select" class="px-4 py-6 flex-col w-full items-center hidden">
@@ -53,7 +59,7 @@
 
         <!-- scorecard -->
         <div id="scorecard" class="flex-col gap-6 px-4 py-6 text-center hidden">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl">Spanish Oaks Golf Course</h1>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl"></h1>
 
             <!-- container for front 9 and back 9 tables -->
             <div class="flex flex-col gap-4 border-collapse lg:flex-row">

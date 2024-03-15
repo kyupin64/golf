@@ -4,12 +4,12 @@ let id = 0;
 class ScoreCard {
     id = getNewId();
     players = [];
+    name;
 
-    constructor(courseId, tee, holes, name) {
+    constructor(courseId, tee, holes) {
         this.courseId = courseId;
         this.tee = tee;
         this.holes = holes;
-        this.name = `${name} (${holes} holes, unnamed)`;
     }
 }
 
@@ -180,17 +180,25 @@ function selectTeeAndHoles(currentCourse) {
 
 function checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse) {
     // if both tee and holes have been selected and at least one player added, hide course options HTML;
-    // add info, options, and players to new scorecard object; and call printScoreCard function
+    // add info, options, and players to new scorecard object; load scorecard menu; and call printScoreCard function
     if (teePicked === true && holesPicked === true && players[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
-        let newScoreCard = new ScoreCard(currentCourse.id, optionsPicked[0], optionsPicked[1], currentCourse.name);
+        let newScoreCard = new ScoreCard(currentCourse.id, optionsPicked[0], optionsPicked[1]);
+        let playerList = "";
         players.forEach((player) => {
             let newPlayer = new Player(player);
             newScoreCard.players.push(newPlayer);
+
+            playerList += player;
+            if (player !== players[players.length - 1]) {
+                playerList += ", ";
+            }
         })
+        newScoreCard.name = `${currentCourse.name}, unnamed (${optionsPicked[0]} tee, ${optionsPicked[1]} holes, players: ${playerList})`;
         scoreCards.push(newScoreCard);
+        loadScorecards();
         
         printScoreCard(newScoreCard, currentCourse);
     }
@@ -567,3 +575,33 @@ function printTotals() {
 
 // call printCourses function to start chain of promises
 printCourses();
+
+function openScorecardMenu(e) {
+    // if scoreCards array is not empty, show/hide scorecard menu with list of saved scorecards and change icon
+    if (scoreCards[0]) {
+        let header = document.getElementById("header")
+        let menu = document.getElementById("scorecard-menu");
+        let icon = e.currentTarget.childNodes[0];
+    
+        header.classList.toggle("pb-4");
+        icon.classList.toggle("fa-bars");
+        icon.classList.toggle("fa-xmark");
+        menu.classList.toggle("hidden");
+        menu.classList.toggle("flex");
+    }
+}
+
+function loadScorecards() {
+    // add heading and buttons for each scorecard that's been added
+    let scorecardMenu = document.getElementById("scorecard-menu");
+    scorecardMenu.innerHTML = `<h3 class="py-2 text-3xl">Saved Scorecards</h3>`;
+
+    scoreCards.forEach((card) => {
+        cardHtml = `<button class="py-1.5 px-2 hover:py-2.5 w-full text-lg border-4 border-gray-500 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white">${card.name}</button>`;
+        scorecardMenu.innerHTML += cardHtml;
+    })
+}
+
+window.addEventListener("load", () => {
+    document.getElementById("nav-button").addEventListener("click", openScorecardMenu);
+})
