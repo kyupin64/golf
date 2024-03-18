@@ -284,9 +284,14 @@ function printFront9(tee, holes, players, teeKey) {
     let first5ParRow = document.querySelector("#front-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#front-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, holes, teeKey, indexes, "front 9");
+    
+    // print players in html and add events for each stroke input box, print existing strokes if there are any
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "front 9");
     if (holes !== "all 18") {
         addStrokeEvent(players, holes);
+        players.forEach((player) => {
+            printExistingStrokes(player);
+        });
     }
 }
 
@@ -305,8 +310,13 @@ function printBack9(tee, holes, players, teeKey) {
     let first5ParRow = document.querySelector("#back-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
     printPar(first5ParRow, last4ParRow, holes, teeKey, indexes, "back 9");
+
+    // print players in html and add events for each stroke input box, print existing strokes if there are any
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "back 9");
     addStrokeEvent(players, holes);
+    players.forEach((player) => {
+        printExistingStrokes(player);
+    });
 }
 
 function printTeeYardage(first5TeeRow, last4TeeRow, hole, tee, teeKey, indexes, frontOrBack) {
@@ -435,6 +445,54 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
     })
 }
 
+function printExistingStrokes(player) {
+    // loop through each stroke input box in HTML for each player and get the hole number to add stroke value if it's been inputted
+    let strokeBoxes = document.querySelectorAll(`.${player.name}-row .stroke-input`);
+    let holeNum;
+    strokeBoxes.forEach((box) => {
+        holeNum = checkCellIndex(box);
+        let holeKey = `hole${holeNum}`
+
+        // check if the index is in the out or in holes, then check if there is a saved value in player object and add to HTML accordingly
+        if (holeNum > 0 && holeNum <= 9) {
+            if (player.outStrokes[holeKey]) {
+                box.innerHTML = player.outStrokes[holeKey];
+            }
+        } else if (holeNum >= 10 && holeNum <= 18) {
+            if (player.inStrokes[holeKey]) {
+                box.innerHTML = player.inStrokes[holeKey];
+            }
+        }
+    });
+    
+    // if totals exist and are not 0, add them to html
+    if (player.outTotal && player.outTotal !== 0) {
+        document.getElementById(`${player.name}-strokes-out`).innerHTML = player.outTotal;
+    }
+    if (player.inTotal && player.inTotal !== 0) {
+        document.getElementById(`${player.name}-strokes-in`).innerHTML = player.inTotal;
+    }
+    if (player.allTotal && player.allTotal !== 0) {
+        document.getElementById(`${player.name}-total-strokes`).innerHTML = player.allTotal;
+    }
+}
+
+function checkCellIndex(element) {
+    // check which table the element is in and adjust the cellIndex accordingly to get the hole number
+    let idx;
+    let tableContainer = element.parentElement.parentElement.parentElement;
+    if (tableContainer.id === "first-5-front-9") {
+        idx = element.cellIndex;
+    } else if (tableContainer.id === "last-4-front-9") {
+        idx = element.cellIndex + 5;
+    } else if (tableContainer.id === "first-5-back-9") {
+        idx = element.cellIndex + 9;
+    } else if (tableContainer.id === "last-4-back-9") {
+        idx = element.cellIndex + 14;
+    }
+    return idx;
+}
+
 function addStrokeEvent(players, holes) {
     players.forEach((player => {
         let strokeInputs = document.querySelectorAll(`.${player.name}-row .stroke-input`);
@@ -451,22 +509,13 @@ function addStrokeEvent(players, holes) {
                 strokeInputContainer.classList.remove("hidden");
                 strokeInputContainer.classList.add("flex");
                 
-                // check which table the target is in and adjust the cellIndex accordingly to get the hole number
-                let idx;
-                let tableContainer = element.parentElement.parentElement.parentElement;
-                if (tableContainer.id === "first-5-front-9") {
-                    idx = element.cellIndex;
-                } else if (tableContainer.id === "last-4-front-9") {
-                    idx = element.cellIndex + 5;
-                } else if (tableContainer.id === "first-5-back-9") {
-                    idx = element.cellIndex + 9;
-                } else if (tableContainer.id === "last-4-back-9") {
-                    idx = element.cellIndex + 14;
-                }
-                // add player name and index to paragraph tag so the user knows exactly what they're inputting
-                strokeInputP.innerHTML = `${player.name}'s strokes for hole ${idx}`;
+                // find the hole number/index
+                let holeNum = checkCellIndex(element);
 
-                makeButtons(element, idx, strokeInputContainer, player, holes);
+                // add player name and index to paragraph tag so the user knows exactly what they're inputting
+                strokeInputP.innerHTML = `${player.name}'s strokes for hole ${holeNum}`;
+
+                makeButtons(element, holeNum, strokeInputContainer, player, holes);
             })
         })
     }))
@@ -600,7 +649,30 @@ function loadScorecards() {
     scoreCards.forEach((card) => {
         cardHtml = `<button class="py-1.5 px-2 hover:py-2.5 w-full text-lg border-4 border-gray-500 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white">${card.name}</button>`;
         scorecardMenu.innerHTML += cardHtml;
-    })
+    });
+
+    // add event listeners to load the clicked scorecard
+    let scoreCardBtns = document.querySelectorAll("#scorecard-menu button");
+    scoreCardBtns.forEach((button => {
+        button.addEventListener("click", cardBtnClick);
+    }));
+}
+
+function cardBtnClick(e) {
+    let currentCardName = e.currentTarget.innerHTML;
+
+    // loop through each scorecard and check if the name is the same as the clicked button
+    Object.values(scoreCards).forEach((obj) => {
+        if (currentCardName === obj.name) {
+            // fetch course from API, reset the currentCourse value to be the new value, clear everything and print the scorecard
+            getCurrentCourse(obj.courseId)
+                .then((course) => currentCourse = course)
+                .then(() => {
+                    clearTable();
+                    printScoreCard(obj);
+                });
+        }
+    });
 }
 
 function clearTable() {
