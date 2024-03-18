@@ -1,6 +1,11 @@
 let scoreCards = [];
 let id = 0;
 
+// set variables for which options were picked, which players were added, and which course was selected
+let optionsPicked = ["tee", "holes"];
+let playerInputs = [];
+let currentCourse = {};
+
 class ScoreCard {
     id = getNewId();
     players = [];
@@ -80,13 +85,13 @@ function printCourses() {
 function printCourseOptions(golfCourseId) {
     getCurrentCourse(golfCourseId)
         // get current course object from previous promise, pass object to new function
-        .then(currentCourse => {
+        .then(course => {
             // show current course options HTML
             document.getElementById("course-options").classList.add("flex");
             document.getElementById("course-options").classList.remove("hidden");
 
             // get the teeBoxes in the first hole and make string for HTML of current course tees
-            let courseTees = currentCourse.holes[0].teeBoxes;
+            let courseTees = course.holes[0].teeBoxes;
             let courseTeesHtml = "";
 
             courseTees.forEach((tee) => {
@@ -112,27 +117,24 @@ function printCourseOptions(golfCourseId) {
                 }
             })
             document.getElementById("tee-list").innerHTML = courseTeesHtml;
-            return currentCourse;
+            return course;
         })
 
         // after all tees have been added to HTML, call function to add event listeners to select options
-        .then((currentCourse) => selectTeeAndHoles(currentCourse));
+        .then((course) => selectTeeAndHoles(course));
 }
     
-function selectTeeAndHoles(currentCourse) {
-    // set variables for if the tee and holes have been picked, an array for which options were picked, and a players array
-    let teePicked = false;
-    let holesPicked = false;
-    let optionsPicked = ["tee", "holes"];
-    let players = [];
+function selectTeeAndHoles(course) {
+    // set empty currentCourse object to whatever course was selected
+    currentCourse = course;
+    
     // make sure player input field starts blank
     document.querySelector("#add-player-input input").value = "";
 
     document.querySelectorAll(".tee-select-btn").forEach((element) => {
         element.addEventListener("click", () => {
-            // check if the tee has already been picked and if not, set teePicked to true and add the id to the options array
+            // check if the tee has already been picked and if not, add the id to the options array
             if (optionsPicked[0] === "tee") {
-                teePicked = true;
                 optionsPicked[0] = element.id;
 
                 // make variables for hover color classes so when clicked, the colors stay solid instead of on hover
@@ -150,9 +152,8 @@ function selectTeeAndHoles(currentCourse) {
 
     document.querySelectorAll(".hole-select-btn").forEach((element) => {
         element.addEventListener("click", () => {
-            // check if the holes have already been picked and if not, set holesPicked to true and add the innerHTML to the options array
+            // check if the holes have already been picked and if not, add the innerHTML to the options array
             if (optionsPicked[1] === "holes") {
-                holesPicked = true;
                 optionsPicked[1] = element.innerHTML;
                 
                 // add solid color styles to hole select button after being clicked
@@ -166,33 +167,36 @@ function selectTeeAndHoles(currentCourse) {
         let name = document.querySelector("#add-player-input input").value;
         // if the input field has text in it, add text to players array and html player list, set input value back to empty
         if (name) {
-            players.push(name);
+            playerInputs.push(name);
             document.getElementById("player-list").innerHTML += `<li>${name}</li>`;
             document.querySelector("#add-player-input input").value = "";
         }
     })
 
-    document.getElementById("continue-btn").addEventListener("click", () => {
-        // check if both options have been selected and if at least one player has been added
-        checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse);
-    })
+    // add event to continue button to check if all options have been selected
+    document.getElementById("continue-btn").addEventListener("click", eventHandler);
 }
 
-function checkSelect(teePicked, holesPicked, optionsPicked, players, currentCourse) {
+function eventHandler() {
+    checkSelect();
+    this.removeEventListener("click", eventHandler);
+}
+
+function checkSelect() {
     // if both tee and holes have been selected and at least one player added, hide course options HTML;
     // add info, options, and players to new scorecard object; load scorecard menu; and call printScoreCard function
-    if (teePicked === true && holesPicked === true && players[0]) {
+    if (optionsPicked[0] !== "tee" && optionsPicked[1] !== "holes" && playerInputs[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
         let newScoreCard = new ScoreCard(currentCourse.id, optionsPicked[0], optionsPicked[1]);
         let playerList = "";
-        players.forEach((player) => {
+        playerInputs.forEach((player) => {
             let newPlayer = new Player(player);
             newScoreCard.players.push(newPlayer);
 
             playerList += player;
-            if (player !== players[players.length - 1]) {
+            if (player !== playerInputs[playerInputs.length - 1]) {
                 playerList += ", ";
             }
         })
@@ -200,11 +204,11 @@ function checkSelect(teePicked, holesPicked, optionsPicked, players, currentCour
         scoreCards.push(newScoreCard);
         loadScorecards();
         
-        printScoreCard(newScoreCard, currentCourse);
+        printScoreCard(newScoreCard);
     }
 }
             
-function printScoreCard(currentScoreCard, currentCourse) {
+function printScoreCard(currentScoreCard) {
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -232,10 +236,10 @@ function printScoreCard(currentScoreCard, currentCourse) {
         back9.classList.add("flex");
     }
 
-    makeTable(currentScoreCard, currentCourse);
+    makeTable(currentScoreCard);
 }
 
-function makeTable(currentScoreCard, currentCourse) {
+function makeTable(currentScoreCard) {
     document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
 
     let tee = currentScoreCard.tee;
@@ -252,60 +256,60 @@ function makeTable(currentScoreCard, currentCourse) {
     });
 
     // call functions to print which holes were chosen
-    if (holes === "front 9") { printFront9(tee, holes, players, currentCourse, teeKey); }
-    else if (holes === "back 9") { printBack9(tee, holes, players, currentCourse, teeKey); }
+    if (holes === "front 9") { printFront9(tee, holes, players, teeKey); }
+    else if (holes === "back 9") { printBack9(tee, holes, players, teeKey); }
     else if (holes === "all 18") {
         // make first column of back 9 hidden if printing all 18 and the screen is big enough
         document.getElementById("hole-title").classList.add("lg:hidden");
 
         // call both front9 and back9 functions, plus the function to add totals
-        printFront9(tee, holes, players, currentCourse, teeKey);
-        printBack9(tee, holes, players, currentCourse, teeKey);
+        printFront9(tee, holes, players, teeKey);
+        printBack9(tee, holes, players, teeKey);
         printTotals();
     }
 }
 
-function printFront9(tee, holes, players, currentCourse, teeKey) {
+function printFront9(tee, holes, players, teeKey) {
     // set variable to tell functions which indexes of holes to print
     let indexes = [0, 5, 9];
     // get table elements from html and call functions to set tee yardage, handicap, and par rows
     let first5TeeRow = document.querySelector("#front-9 table:first-child tbody tr:nth-child(2)");
     let last4TeeRow = document.querySelector("#front-9 table:last-child tbody tr:nth-child(2)");
-    printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, holes, tee, teeKey, indexes, "front 9");
+    printTeeYardage(first5TeeRow, last4TeeRow, holes, tee, teeKey, indexes, "front 9");
 
     let first5HcpRow = document.querySelector("#front-9 table:first-child tbody tr:nth-child(3)");
     let last4HcpRow = document.querySelector("#front-9 table:last-child tbody tr:nth-child(3)");
-    printHandicap(first5HcpRow, last4HcpRow, currentCourse, holes, teeKey, indexes, "front 9");
+    printHandicap(first5HcpRow, last4HcpRow, holes, teeKey, indexes, "front 9");
 
     let first5ParRow = document.querySelector("#front-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#front-9 table:last-child tbody tr:last-child");
-    printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "front 9");
+    printPar(first5ParRow, last4ParRow, holes, teeKey, indexes, "front 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "front 9");
     if (holes !== "all 18") {
         addStrokeEvent(players, holes);
     }
 }
 
-function printBack9(tee, holes, players, currentCourse, teeKey) {
+function printBack9(tee, holes, players, teeKey) {
     // set variable to tell functions which indexes of holes to print
     let indexes = [9, 14, 18];
     // get table elements from html and call functions to set tee yardage, handicap, and par rows
     let first5TeeRow = document.querySelector("#back-9 table:first-child tbody tr:nth-child(2)");
     let last4TeeRow = document.querySelector("#back-9 table:last-child tbody tr:nth-child(2)");
-    printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, holes, tee, teeKey, indexes, "back 9");
+    printTeeYardage(first5TeeRow, last4TeeRow, holes, tee, teeKey, indexes, "back 9");
 
     let first5HcpRow = document.querySelector("#back-9 table:first-child tbody tr:nth-child(3)");
     let last4HcpRow = document.querySelector("#back-9 table:last-child tbody tr:nth-child(3)");
-    printHandicap(first5HcpRow, last4HcpRow, currentCourse, holes, teeKey, indexes, "back 9");
+    printHandicap(first5HcpRow, last4HcpRow, holes, teeKey, indexes, "back 9");
 
     let first5ParRow = document.querySelector("#back-9 table:first-child tbody tr:last-child");
     let last4ParRow = document.querySelector("#back-9 table:last-child tbody tr:last-child");
-    printPar(first5ParRow, last4ParRow, currentCourse, holes, teeKey, indexes, "back 9");
+    printPar(first5ParRow, last4ParRow, holes, teeKey, indexes, "back 9");
     printPlayers(first5ParRow, last4ParRow, holes, players, indexes, "back 9");
     addStrokeEvent(players, holes);
 }
 
-function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, teeKey, indexes, frontOrBack) {
+function printTeeYardage(first5TeeRow, last4TeeRow, hole, tee, teeKey, indexes, frontOrBack) {
     tee = tee.toUpperCase();
     first5TeeRow.innerHTML = `<td>${tee}</td>`;
     // make first column of back 9 hidden if printing all 18 and the screen is big enough
@@ -336,7 +340,7 @@ function printTeeYardage(first5TeeRow, last4TeeRow, currentCourse, hole, tee, te
     }
 }
 
-function printHandicap(first5HcpRow, last4HcpRow, currentCourse, hole, teeKey, indexes, frontOrBack) {
+function printHandicap(first5HcpRow, last4HcpRow, hole, teeKey, indexes, frontOrBack) {
     first5HcpRow.innerHTML = `<td>HANDICAP</td>`;
     // make first column of back 9 hidden if printing all 18 and the screen is big enough
     if (frontOrBack === "back 9" && hole === "all 18") {
@@ -361,7 +365,7 @@ function printHandicap(first5HcpRow, last4HcpRow, currentCourse, hole, teeKey, i
     }
 }
 
-function printPar(first5ParRow, last4ParRow, currentCourse, hole, teeKey, indexes, frontOrBack) {
+function printPar(first5ParRow, last4ParRow, hole, teeKey, indexes, frontOrBack) {
     first5ParRow.innerHTML = `<td>PAR</td>`;
     // make first column of back 9 hidden if printing all 18 and the screen is big enough
     if (frontOrBack === "back 9" && hole === "all 18") {
@@ -573,9 +577,6 @@ function printTotals() {
     hcpRow.innerHTML += `<td></td>`
 }
 
-// call printCourses function to start chain of promises
-printCourses();
-
 function openScorecardMenu(e) {
     // if scoreCards array is not empty, show/hide scorecard menu with list of saved scorecards and change icon
     if (scoreCards[0]) {
@@ -602,6 +603,45 @@ function loadScorecards() {
     })
 }
 
+function clearTable() {
+    // hide scorecard, front 9 section, and back 9 section
+    document.getElementById("scorecard").classList.add("hidden");
+    document.getElementById("front-9").classList.add("hidden");
+    document.getElementById("back-9").classList.add("hidden");
+
+    // reset each table's HTML
+    document.getElementById("first-5-front-9").innerHTML = `<tbody>
+        <tr><td>HOLE</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+        <tr></tr><tr></tr><tr></tr></tbody>`;
+    document.getElementById("last-4-front-9").innerHTML = `<tbody>
+        <tr><td class="sm:hidden">HOLE</td><td>6</td><td>7</td><td>8</td><td>9</td><td>OUT</td></tr>
+        <tr></tr><tr></tr><tr></tr></tbody>`;
+    document.getElementById("first-5-back-9").innerHTML = `<tbody>
+        <tr><td id="hole-title">HOLE</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
+        <tr></tr><tr></tr><tr></tr></tbody>`;
+    document.getElementById("last-4-back-9").innerHTML = `<tbody>
+        <tr><td class="sm:hidden">HOLE</td><td>15</td><td>16</td><td>17</td><td>18</td><td>IN</td><td class="hidden">TOT</td></tr>
+        <tr></tr><tr></tr><tr></tr></tbody>`;
+
+    // reset hole list and player list HTML
+    document.getElementById("hole-list").innerHTML = `<button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">front 9</button>
+        <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">back 9</button>
+        <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">all 18</button>`;
+    document.getElementById("player-list").innerHTML = "";
+}
+
 window.addEventListener("load", () => {
+    printCourses();
+
     document.getElementById("nav-button").addEventListener("click", openScorecardMenu);
-})
+
+    // when title is clicked, reset options, clear tables, and go back to start page
+    document.querySelector("#header h2").addEventListener("click", () => {
+        optionsPicked = ["tee", "holes"];
+        playerInputs = [];
+        currentCourse = {};
+
+        clearTable();
+        printCourses();
+    });
+});
