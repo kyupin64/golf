@@ -11,8 +11,13 @@
 <body>
     <div id="container" class="relative">
 
+        <!-- background image -->
+        <div id="image-container" class="absolute z-0 bg-emerald-700 flex flex-col">
+            <img src="images/bg.jpg" class="object-cover object-top w-dvw h-dvh opacity-50" alt="wallpaper image of golf course with a stream and trees - source: https://wallpapers.com/wallpapers/1920x1080-hd-golf-pg3sbak5sljth8qz.html">
+        </div>
+
         <!-- "stroke input box" -->
-        <div id="stroke-input-container" class="absolute top-40 w-full justify-center z-20 hidden">
+        <div id="stroke-input-container" class="absolute top-40 w-full justify-center z-30 hidden">
             <div class="p-3 w-52 flex flex-col items-center gap-3 bg-emerald-700 shadow-xl">
                 <p class="text-center text-xl w-36 text-white"></p>
                 <input type="number" class="px-2 py-1 w-36 max-w-full border-2 shadow-md"">
@@ -21,7 +26,7 @@
         </div>
 
         <!-- header -->
-        <div class="flex flex-col p-2 bg-emerald-700 text-white">
+        <div class="relative flex flex-col p-2 bg-emerald-700 text-white z-20">
             <div id="header" class="flex w-full py-2 px-6 justify-between items-center">
                 <h2 class="text-xl hover:cursor-pointer">Simple Score</h2>
                 <button id="nav-button"><i class="fa-solid fa-bars"></i></button>
@@ -33,13 +38,13 @@
 
 
         <!-- course selection screen -->
-        <div id="course-select" class="px-4 py-6 flex-col w-full items-center hidden">
+        <div id="course-select" class="relative px-4 py-6 flex-col w-full items-center hidden z-20">
             <h1 class="text-3xl sm:text-4xl">Pick a course:</h1>
             <div id="course-list" class="py-6 text-xl flex flex-col items-center gap-4"></div>
         </div>
 
         <!-- current course options screen -->
-        <div id="course-options" class="px-4 pt-6 pb-28 flex-col w-full items-center hidden">
+        <div id="course-options" class="relative px-4 pt-6 pb-28 flex-col w-full items-center hidden z-20">
             <h1 class="text-3xl sm:text-4xl">Select tee:</h1>
             <div id="tee-list" class="py-6 text-xl flex flex-wrap justify-center gap-4 w-full"></div>
             <h1 class="text-3xl sm:text-4xl">Select holes:</h1>
@@ -58,12 +63,12 @@
         </div>
 
         <!-- scorecard -->
-        <div id="scorecard" class="flex-col gap-6 px-4 py-6 text-center hidden">
-            <div class="relative flex flex-col items-center gap-4">
+        <div id="scorecard" class="relative flex-col gap-6 px-4 py-6 text-center hidden z-20">
+            <div class="relative flex flex-col items-center gap-4 bg-white py-4">
                 <h1 class="w-72 sm:w-96 md:w-2/3 text-2xl sm:text-3xl md:text-4xl"></h1>
                 <input id="name-input" class="w-72 sm:w-96 md:w-2/3 text-2xl sm:text-3xl md:text-4xl border-2 shadow-md hidden" placeholder="Thanksgiving Point">
-                <button id="name-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-0 sm:-top-1.5">Rename Scorecard</button>
-                <button id="name-submit-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-0 sm:-top-1.5 hidden">Submit</button>
+                <button id="name-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-2 sm:top-2">Rename Scorecard</button>
+                <button id="name-submit-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-3.5 sm:top-3.5 hidden">Submit</button>
             </div>
 
             <!-- container for front 9 and back 9 tables -->
@@ -72,7 +77,7 @@
                 <!-- front 9 - two tables, one for names and first 5 holes, one for holes 6-9 and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
                 <div id="front-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
-                    <table id="first-5-front-9" class="border-collapse w-full *:*:*:border-2 *:*:*:border-black">
+                    <table id="first-5-front-9" class="border-collapse w-full bg-white *:*:*:border-2 *:*:*:border-black">
                         <tbody>
                             <tr>
                                 <td>HOLE</td>
@@ -87,7 +92,7 @@
                             <tr></tr>
                         </tbody>
                     </table>
-                    <table id="last-4-front-9" class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-2/3">
+                    <table id="last-4-front-9" class="border-collapse bg-white *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-2/3">
                         <tbody>
                             <tr>
                                 <td class="sm:hidden">HOLE</td>
@@ -107,7 +112,7 @@
                 <!-- back 9 - two tables, one for names and holes 10-14, one for last 4 holes and totals -->
                 <!-- (the reason for two tables is so it's not crammed on small screens) -->
                 <div id="back-9" class="w-full min-w-72 flex-col gap-3 border-2 border-black sm:flex-row sm:gap-0 hidden">
-                    <table id="first-5-back-9" class="border-collapse w-full *:*:*:border-2 *:*:*:border-black lg:w-4/5">
+                    <table id="first-5-back-9" class="border-collapse w-full bg-white *:*:*:border-2 *:*:*:border-black lg:w-4/5">
                         <tbody>
                             <tr>
                                 <td id="hole-title">HOLE</td>
@@ -122,7 +127,7 @@
                             <tr></tr>
                         </tbody>
                     </table>
-                    <table id="last-4-back-9" class="border-collapse *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-4/5 lg:w-full">
+                    <table id="last-4-back-9" class="border-collapse bg-white *:*:*:border-2 *:*:*:border-black *:*:*:sm:border-s-0 sm:w-4/5 lg:w-full">
                         <tbody>
                             <tr>
                                 <td class="sm:hidden">HOLE</td>
@@ -142,6 +147,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

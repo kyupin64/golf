@@ -279,7 +279,6 @@ function checkSelect() {
 }
             
 function printScoreCard(currentCardName = undefined) {
-    console.log(currentScoreCard, currentCourse)
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
