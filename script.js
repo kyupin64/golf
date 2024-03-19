@@ -17,6 +17,8 @@ class ScoreCard {
     id = getNewId();
     players = [];
     name;
+    teeBgColor;
+    teeTextColor = "white";
 
     constructor(courseId, tee, holes) {
         this.courseId = courseId;
@@ -106,18 +108,11 @@ function printCourseOptions(golfCourseId) {
                 if (tee.teeType && tee.teeType !== "auto change location") {
                     // set variables for the colors, change colors of bg and text based on what the teeColorType is
                     let teeColor = tee.teeColorType;
-                    let teeBgColor;
                     let textColor = "white";
-                    if (teeColor === "black") {
-                        teeBgColor = teeColor;
-                    } else if (teeColor === "white") {
-                        teeBgColor = "emerald-700";
-                    } else if (teeColor === "yellow") {
-                        teeBgColor = "yellow-300";
+                    if (teeColor === "yellow") {
                         textColor = "black";
-                    } else {
-                        teeBgColor = `${teeColor}-700`;
                     }
+                    let teeBgColor = getTeeColors(teeColor);
 
                     // add button to string with the type and color (and styles) for each tee
                     courseTeesHtml += `<button id="${tee.teeColorType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
@@ -129,6 +124,22 @@ function printCourseOptions(golfCourseId) {
 
         // after all tees have been added to HTML, call function to add event listeners to select options
         .then((course) => selectTeeAndHoles(course));
+}
+
+function getTeeColors(teeColor) {
+    // check tee color to set bg color, return bg color
+    let teeBgColor;
+    if (teeColor === "black") {
+        teeBgColor = teeColor;
+    } else if (teeColor === "white") {
+        teeBgColor = "emerald-700";
+    } else if (teeColor === "yellow") {
+        teeBgColor = "yellow-300";
+    } else {
+        teeBgColor = `${teeColor}-700`;
+    }
+
+    return teeBgColor;
 }
     
 function selectTeeAndHoles(course) {
@@ -190,8 +201,8 @@ function eventHandler() {
 }
 
 function checkSelect() {
-    // if both tee and holes have been selected and at least one player added, hide course options HTML;
-    // add info, options, and players to new scorecard object; load scorecard menu; and call print the scorecard
+    // if both tee and holes have been selected and at least one player added, hide course options HTML; add info,
+    // options, players, and tee colors to new scorecard object; load scorecard menu; and call print the scorecard
     if (optionsPicked[0] !== "tee" && optionsPicked[1] !== "holes" && playerInputs[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
@@ -208,6 +219,10 @@ function checkSelect() {
             }
         })
         newScoreCard.name = `${currentCourse.name}, unnamed (${optionsPicked[0]} tee, ${optionsPicked[1]} holes, players: ${playerList})`;
+        if (optionsPicked[0] === "yellow") {
+            newScoreCard.teeTextColor = "black";
+        }
+        newScoreCard.teeBgColor = getTeeColors(optionsPicked[0]);
         scoreCards.push(newScoreCard);
 
         currentScoreCard = newScoreCard;
@@ -337,12 +352,12 @@ function printBack9(tee, holes, players, teeKey) {
 
 function printTeeYardage(first5TeeRow, last4TeeRow, hole, tee, teeKey, indexes, frontOrBack) {
     tee = tee.toUpperCase();
-    first5TeeRow.innerHTML = `<td>${tee}</td>`;
+    first5TeeRow.innerHTML = `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${tee}</td>`;
     // make first column of back 9 hidden if printing all 18 and the screen is big enough
     if (frontOrBack === "back 9" && hole === "all 18") {
-        first5TeeRow.innerHTML = `<td class="lg:hidden">${tee}</td>`;
+        first5TeeRow.innerHTML = `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor} lg:hidden">${tee}</td>`;
     }
-    last4TeeRow.innerHTML = `<td class="sm:hidden">${tee}</td>`;
+    last4TeeRow.innerHTML = `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor} sm:hidden">${tee}</td>`;
 
     let currentYards = 0;
     let totalYards = 0;
@@ -351,17 +366,17 @@ function printTeeYardage(first5TeeRow, last4TeeRow, hole, tee, teeKey, indexes, 
     for (i = indexes[0]; i < indexes[1]; i++) {
         currentYards = currentCourse.holes[i].teeBoxes[teeKey].yards;
         totalYards += currentYards;
-        first5TeeRow.innerHTML += `<td>${currentYards}</td>`;
+        first5TeeRow.innerHTML += `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${currentYards}</td>`;
     }
     for (i = indexes[1]; i < indexes[2]; i++) {
         currentYards = currentCourse.holes[i].teeBoxes[teeKey].yards;
         totalYards += currentYards;
-        last4TeeRow.innerHTML += `<td>${currentYards}</td>`;
+        last4TeeRow.innerHTML += `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${currentYards}</td>`;
         // add total yardage in last column
         if (i === 8) {
-            last4TeeRow.innerHTML += `<td id="total-yards-out">${totalYards}</td>`;
+            last4TeeRow.innerHTML += `<td id="total-yards-out" class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${totalYards}</td>`;
         } else if (i === 17) {
-            last4TeeRow.innerHTML += `<td id="total-yards-in">${totalYards}</td>`;
+            last4TeeRow.innerHTML += `<td id="total-yards-in" class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${totalYards}</td>`;
         }
     }
 }
@@ -637,7 +652,7 @@ function printTotals() {
     let totalPar = parOut + parIn;
 
     // add those totals to the html, add empty td element to handicap row so border is consistent
-    teeTotal.innerHTML += `<td>${totalYards}</td>`;
+    teeTotal.innerHTML += `<td class="bg-${currentScoreCard.teeBgColor} text-${currentScoreCard.teeTextColor}">${totalYards}</td>`;
     parTotal.innerHTML += `<td>${totalPar}</td>`;
     hcpRow.innerHTML += `<td></td>`
 }
