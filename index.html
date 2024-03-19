@@ -59,7 +59,12 @@
 
         <!-- scorecard -->
         <div id="scorecard" class="flex-col gap-6 px-4 py-6 text-center hidden">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl"></h1>
+            <div class="relative flex flex-col items-center gap-4">
+                <h1 class="w-72 sm:w-96 md:w-2/3 text-2xl sm:text-3xl md:text-4xl"></h1>
+                <input id="name-input" class="w-72 sm:w-96 md:w-2/3 text-2xl sm:text-3xl md:text-4xl border-2 shadow-md hidden" placeholder="Thanksgiving Point">
+                <button id="name-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-0 sm:-top-1.5">Rename Scorecard</button>
+                <button id="name-submit-btn" class="py-0.5 px-3 w-fit sm:w-24 sm:h-14 border-2 shadow-md hover:bg-emerald-700 hover:text-white sm:absolute sm:right-0 sm:-top-1.5 hidden">Submit</button>
+            </div>
 
             <!-- container for front 9 and back 9 tables -->
             <div class="flex flex-col gap-4 border-collapse lg:flex-row">

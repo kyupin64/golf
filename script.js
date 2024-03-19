@@ -1,10 +1,17 @@
 let scoreCards = [];
 let id = 0;
 
-// set variables for which options were picked, which players were added, and which course was selected
+// set variables for which options were picked, which players were added, which course was selected, and the current scorecard object
 let optionsPicked = ["tee", "holes"];
 let playerInputs = [];
 let currentCourse = {};
+let currentScoreCard = {};
+
+// set varibales for scorecard name, name input field, rename button, and submit button
+let currentName = document.querySelector("#scorecard h1");
+let nameInput = document.getElementById("name-input");
+let renameBtn = document.getElementById("name-btn");
+let nameSubmitBtn = document.getElementById("name-submit-btn");
 
 class ScoreCard {
     id = getNewId();
@@ -184,7 +191,7 @@ function eventHandler() {
 
 function checkSelect() {
     // if both tee and holes have been selected and at least one player added, hide course options HTML;
-    // add info, options, and players to new scorecard object; load scorecard menu; and call printScoreCard function
+    // add info, options, and players to new scorecard object; load scorecard menu; and call print the scorecard
     if (optionsPicked[0] !== "tee" && optionsPicked[1] !== "holes" && playerInputs[0]) {
         document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
@@ -202,13 +209,15 @@ function checkSelect() {
         })
         newScoreCard.name = `${currentCourse.name}, unnamed (${optionsPicked[0]} tee, ${optionsPicked[1]} holes, players: ${playerList})`;
         scoreCards.push(newScoreCard);
+
+        currentScoreCard = newScoreCard;
+
         loadScorecards();
-        
-        printScoreCard(newScoreCard);
+        printScoreCard();
     }
 }
             
-function printScoreCard(currentScoreCard) {
+function printScoreCard(currentCardName = undefined) {
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -236,11 +245,18 @@ function printScoreCard(currentScoreCard) {
         back9.classList.add("flex");
     }
 
-    makeTable(currentScoreCard);
+    makeTable(currentCardName);
 }
 
-function makeTable(currentScoreCard) {
-    document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
+function makeTable(currentCardName = undefined) {
+    // check if card name has been set and if so put it in HTML, if not default to name in API object
+    if (currentCardName !== undefined) {
+        document.querySelector("#scorecard h1").innerHTML = currentCardName;
+    } else {
+        document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
+    }
+    // add event to rename button
+    document.getElementById("name-btn").addEventListener("click", renameEventHandler);
 
     let tee = currentScoreCard.tee;
     let holes = currentScoreCard.holes;
@@ -661,15 +677,16 @@ function loadScorecards() {
 function cardBtnClick(e) {
     let currentCardName = e.currentTarget.innerHTML;
 
-    // loop through each scorecard and check if the name is the same as the clicked button
+    // loop through each scorecard and check if the name is the same as the clicked button, set currentScoreCard to correct object
     Object.values(scoreCards).forEach((obj) => {
         if (currentCardName === obj.name) {
+            currentScoreCard = obj;
             // fetch course from API, reset the currentCourse value to be the new value, clear everything and print the scorecard
             getCurrentCourse(obj.courseId)
                 .then((course) => currentCourse = course)
                 .then(() => {
                     clearTable();
-                    printScoreCard(obj);
+                    printScoreCard(currentCardName);
                 });
         }
     });
@@ -700,6 +717,50 @@ function clearTable() {
         <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">back 9</button>
         <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">all 18</button>`;
     document.getElementById("player-list").innerHTML = "";
+}
+
+function toggleName() {
+    // hide/show h1 element and button to rename scorecard
+    currentName.classList.toggle("hidden");
+    renameBtn.classList.toggle("hidden");
+
+    // show/hide name input field and submit new name button
+    nameInput.classList.toggle("hidden");
+    nameSubmitBtn.classList.toggle("hidden");
+}
+
+function renameEventHandler() {
+    // remove the event listener on the rename scorecard button, call function to rename scorecard, and add new event listener
+    this.removeEventListener("click", renameEventHandler);
+    renameScoreCard();
+    document.getElementById("name-btn").addEventListener("click", renameEventHandler);
+}
+
+function renameScoreCard() {
+    // clear input value and use current name as placeholder, toggle elements, and add event listener on new name submit button
+    nameInput.value = "";
+    nameInput.placeholder = currentScoreCard.name;
+    toggleName();
+    nameSubmitBtn.addEventListener("click", submitEventHandler);
+}
+
+function submitEventHandler() {
+    // remove event listener on new name submit button and call function to add new name to object and HTML
+    this.removeEventListener("click", submitEventHandler);
+    submitName();
+}
+
+function submitName() {
+    // if the input field has text in it add that name to object and HTML, toggle elements, and load the new scorecards
+    if (nameInput.value) {
+        currentScoreCard.name = nameInput.value;
+        currentName.innerHTML = nameInput.value;
+        toggleName();
+        loadScorecards();
+    } else {
+        // if not add a new event listener to submit button to restart chain
+        nameSubmitBtn.addEventListener("click", submitEventHandler);
+    }
 }
 
 window.addEventListener("load", () => {
