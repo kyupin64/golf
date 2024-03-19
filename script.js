@@ -272,12 +272,14 @@ function checkSelect() {
 
         currentScoreCard = newScoreCard;
 
+        saveThings();
         loadScorecards();
         printScoreCard();
     }
 }
             
 function printScoreCard(currentCardName = undefined) {
+    console.log(currentScoreCard, currentCourse)
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -635,6 +637,7 @@ function makeButtons(element, holeNum, strokeInputContainer, player, holes) {
             }
 
             printStrokeTotals(player, holes);
+            saveThings();
         }
     });
 }
@@ -823,8 +826,34 @@ function submitName() {
     }
 }
 
+// function to retrieve saved localStorage scoreCards object, currentScoreCard object, currentCourse object, and id, called on page load
+function restoreSave() {
+    scoreCards = JSON.parse(localStorage.getItem("scoreCards"));
+    currentScoreCard = JSON.parse(localStorage.getItem("currentScoreCard"));
+    currentCourse = JSON.parse(localStorage.getItem("currentCourse"));
+    id = JSON.parse(localStorage.getItem("id"));
+
+    // clear table, load all scorecards as buttons in dropdown, and reload current scorecard
+    clearTable();
+    loadScorecards();
+    printScoreCard();
+}
+
+// function to save scoreCards object, currentScoreCard object, currentCourse object, and id, called each time a new scorecard or stroke is added
+function saveThings() {
+    localStorage.setItem("scoreCards", JSON.stringify(scoreCards));
+    localStorage.setItem("currentScoreCard", JSON.stringify(currentScoreCard));
+    localStorage.setItem("currentCourse", JSON.stringify(currentCourse));
+    localStorage.setItem("id", JSON.stringify(id));
+}
+
 window.addEventListener("load", () => {
-    printCourses();
+    // check if localStorage has been set yet, if it has then retrieve it, if not then start from beginning
+    if (JSON.parse(localStorage.getItem("scoreCards"))) {
+        restoreSave();
+    } else {
+        printCourses();
+    }
 
     document.getElementById("nav-button").addEventListener("click", openScorecardMenu);
 
