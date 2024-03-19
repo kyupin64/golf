@@ -66,7 +66,6 @@ function printCourses() {
         // get array of each course object from previous promise, pass array to new function
         .then(courseList => {
             // show course selection HTML
-            document.getElementById("course-select").classList.add("flex");
             document.getElementById("course-select").classList.remove("hidden");
 
             let coursesHtml = "";
@@ -82,7 +81,6 @@ function printCourses() {
             document.querySelectorAll(".course-select-btn").forEach((element) => {
                 element.addEventListener("click", () => {
                     // hide course selection HTML
-                    document.getElementById("course-select").classList.remove("flex");
                     document.getElementById("course-select").classList.add("hidden");
                     // call printCourseOptions function to show current course options HTML
                     printCourseOptions(element.id);
@@ -96,7 +94,6 @@ function printCourseOptions(golfCourseId) {
         // get current course object from previous promise, pass object to new function
         .then(course => {
             // show current course options HTML
-            document.getElementById("course-options").classList.add("flex");
             document.getElementById("course-options").classList.remove("hidden");
 
             // get the teeBoxes in the first hole and call function to print tees
@@ -249,7 +246,6 @@ function checkSelect() {
     // if both tee and holes have been selected and at least one player added, hide course options HTML; add info,
     // options, players, and tee colors to new scorecard object; load scorecard menu; and call print the scorecard
     if (optionsPicked[0] !== "tee" && optionsPicked[1] !== "holes" && playerInputs[0]) {
-        document.getElementById("course-options").classList.remove("flex");
         document.getElementById("course-options").classList.add("hidden");
         
         let newScoreCard = new ScoreCard(currentCourse.id, optionsPicked[0], optionsPicked[1]);
@@ -779,6 +775,10 @@ function clearTable() {
         <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">back 9</button>
         <button class="hole-select-btn py-2 px-6 border-2 shadow-md hover:bg-emerald-700 hover:text-white">all 18</button>`;
     document.getElementById("player-list").innerHTML = "";
+
+    // hide course select and options select screens
+    document.getElementById("course-select").classList.add("hidden");
+    document.getElementById("course-options").classList.add("hidden");
 }
 
 function toggleName() {
