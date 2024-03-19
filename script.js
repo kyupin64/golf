@@ -99,31 +99,35 @@ function printCourseOptions(golfCourseId) {
             document.getElementById("course-options").classList.add("flex");
             document.getElementById("course-options").classList.remove("hidden");
 
-            // get the teeBoxes in the first hole and make string for HTML of current course tees
+            // get the teeBoxes in the first hole and call function to print tees
             let courseTees = course.holes[0].teeBoxes;
-            let courseTeesHtml = "";
-
-            courseTees.forEach((tee) => {
-                // check if teeType exists and that it's not just auto change location before doing anything with it
-                if (tee.teeType && tee.teeType !== "auto change location") {
-                    // set variables for the colors, change colors of bg and text based on what the teeColorType is
-                    let teeColor = tee.teeColorType;
-                    let textColor = "white";
-                    if (teeColor === "yellow") {
-                        textColor = "black";
-                    }
-                    let teeBgColor = getTeeColors(teeColor);
-
-                    // add button to string with the type and color (and styles) for each tee
-                    courseTeesHtml += `<button id="${tee.teeColorType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
-                }
-            })
-            document.getElementById("tee-list").innerHTML = courseTeesHtml;
+            printTeeOptions(courseTees);
             return course;
         })
 
         // after all tees have been added to HTML, call function to add event listeners to select options
         .then((course) => selectTeeAndHoles(course));
+}
+
+function printTeeOptions(courseTees) {
+    let courseTeesHtml = "";
+
+    courseTees.forEach((tee) => {
+        // check if teeType exists and that it's not just auto change location before doing anything with it
+        if (tee.teeType && tee.teeType !== "auto change location") {
+            // set variables for the colors, change colors of bg and text based on what the teeColorType is
+            let teeColor = tee.teeColorType;
+            let textColor = "white";
+            if (teeColor === "yellow") {
+                textColor = "black";
+            }
+            let teeBgColor = getTeeColors(teeColor);
+
+            // add button to string with the type and color (and styles) for each tee
+            courseTeesHtml += `<button id="${tee.teeColorType}" class="tee-select-btn py-2 px-6 border-2 shadow-md hover:bg-${teeBgColor} hover:text-${textColor}">${tee.teeType} / ${teeColor}</button>`;
+        }
+    })
+    document.getElementById("tee-list").innerHTML = courseTeesHtml;
 }
 
 function getTeeColors(teeColor) {
@@ -150,36 +154,12 @@ function selectTeeAndHoles(course) {
     document.querySelector("#add-player-input input").value = "";
 
     document.querySelectorAll(".tee-select-btn").forEach((element) => {
-        element.addEventListener("click", () => {
-            // check if the tee has already been picked and if not, add the id to the options array
-            if (optionsPicked[0] === "tee") {
-                optionsPicked[0] = element.id;
-
-                // make variables for hover color classes so when clicked, the colors stay solid instead of on hover
-                let bgColor = element.classList[5];
-                let textColor = element.classList[6];
-
-                // split the strings on ":" to get rid of hover modifier and add the solid colors to the classLists
-                let newBgColor = bgColor.split(":")[1];
-                let newTextColor = textColor.split(":")[1];
-                element.classList.add(newBgColor);
-                element.classList.add(newTextColor);
-            }
-        })
-    })
+        element.addEventListener("click", teeSelectHandler);   
+    });
 
     document.querySelectorAll(".hole-select-btn").forEach((element) => {
-        element.addEventListener("click", () => {
-            // check if the holes have already been picked and if not, add the innerHTML to the options array
-            if (optionsPicked[1] === "holes") {
-                optionsPicked[1] = element.innerHTML;
-                
-                // add solid color styles to hole select button after being clicked
-                element.classList.add("bg-emerald-700");
-                element.classList.add("text-white");
-            }
-        })
-    })
+        element.addEventListener("click", holeSelectHandler);
+    });
 
     document.querySelector("#add-player-input button").addEventListener("click", () => {
         let name = document.querySelector("#add-player-input input").value;
@@ -189,10 +169,75 @@ function selectTeeAndHoles(course) {
             document.getElementById("player-list").innerHTML += `<li>${name}</li>`;
             document.querySelector("#add-player-input input").value = "";
         }
-    })
+    });
 
     // add event to continue button to check if all options have been selected
     document.getElementById("continue-btn").addEventListener("click", eventHandler);
+}
+
+function teeSelectHandler(e) {
+    // remove all event listeners and call tee selection function for target button
+    document.querySelectorAll(".tee-select-btn").forEach((elem) => {
+        elem.removeEventListener("click", teeSelectHandler)
+    });
+
+    let element = e.currentTarget;
+    teeSelect(element);
+}
+
+function teeSelect(element) {
+    // remove solid color classes from any tee select buttons that have already been clicked
+    document.querySelectorAll(".tee-select-btn").forEach((elem) => {
+        elem.classList.remove(elem.classList[8]);
+        elem.classList.remove(elem.classList[7]);
+    });
+
+    // add the id to the options array, get colors, then add solid color classes to current button
+    optionsPicked[0] = element.id;
+
+    let teeColor = element.id;
+    let textColor = "white";
+    if (teeColor === "yellow") {
+        textColor = "black";
+    }
+    let teeBgColor = getTeeColors(teeColor);
+
+    element.classList.add(`bg-${teeBgColor}`);
+    element.classList.add(`text-${textColor}`);
+
+    // set new event listeners for the buttons so the user can change to a different option
+    document.querySelectorAll(".tee-select-btn").forEach((elem) => {
+        elem.addEventListener("click", teeSelectHandler);
+    });
+}
+
+function holeSelectHandler(e) {
+    // remove all event listeners and call hole selection function for target button
+    document.querySelectorAll(".hole-select-btn").forEach((elem) => {
+        elem.removeEventListener("click", holeSelectHandler);
+    });
+
+    let element = e.currentTarget;
+    holeSelect(element);
+}
+
+function holeSelect(element) {
+    // remove solid color classes from any hole select buttons that have already been clicked
+    document.querySelectorAll(".hole-select-btn").forEach((elem) => {
+        elem.classList.remove("bg-emerald-700");
+        elem.classList.remove("text-white");
+    });
+
+    // add the innerHTML to the options array then add solid color classes to current button
+    optionsPicked[1] = element.innerHTML;
+    
+    element.classList.add("bg-emerald-700");
+    element.classList.add("text-white");
+
+    // set new event listeners for the buttons so the user can change to a different option
+    document.querySelectorAll(".hole-select-btn").forEach((elem) => {
+        elem.addEventListener("click", holeSelectHandler);
+    });
 }
 
 function eventHandler() {
