@@ -8,11 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="script.js"></script>
 </head>
-<body>
+<body class="bg-green-600">
     <div id="container" class="relative">
 
         <!-- background image -->
-        <div id="image-container" class="absolute z-0 bg-emerald-700 flex flex-col">
+        <div id="image-container" class="absolute z-0 flex flex-col">
             <img src="images/bg.jpg" class="object-cover object-top w-dvw h-dvh opacity-50" alt="wallpaper image of golf course with a stream and trees - source: https://wallpapers.com/wallpapers/1920x1080-hd-golf-pg3sbak5sljth8qz.html">
         </div>
 
@@ -148,6 +148,10 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div id="new-player-input" class="flex flex-wrap gap-4 w-fit p-0.5">
+                <input placeholder="Add new player..." class="px-2 w-48 border-2 shadow-md">
+                <button id="new-player-btn" class="pt-1 pb-1.5 px-3 text-xl leading-6 border-2 shadow-md bg-white hover:bg-emerald-700 hover:text-white">+</button>
             </div>
         </div>
     </div>

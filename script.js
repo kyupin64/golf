@@ -1,11 +1,13 @@
 let scoreCards = [];
-let id = 0;
+let scoreCardId = 0;
+let playerId = 0;
 
-// set variables for which options were picked, which players were added, which course was selected, and the current scorecard object
+// set variables for picked options, added players, selected course, current scorecard object, and which screen the player is currently on
 let optionsPicked = ["tee", "holes"];
 let playerInputs = [];
 let currentCourse = {};
 let currentScoreCard = {};
+let currentPage;
 
 // set varibales for scorecard name, name input field, rename button, and submit button
 let currentName = document.querySelector("#scorecard h1");
@@ -14,11 +16,13 @@ let renameBtn = document.getElementById("name-btn");
 let nameSubmitBtn = document.getElementById("name-submit-btn");
 
 class ScoreCard {
-    id = getNewId();
+    id = getNewId("scoreCard");
     players = [];
     name;
+    named = false;
     teeBgColor;
     teeTextColor = "white";
+    teeKey;
 
     constructor(courseId, tee, holes) {
         this.courseId = courseId;
@@ -34,6 +38,7 @@ class Player {
     inStrokes = { hole10: undefined, hole11: undefined, hole12: undefined, hole13: undefined, hole14: undefined, 
         hole15: undefined, hole16: undefined, hole17: undefined, hole18: undefined }
 
+    id = getNewId("player");
     outTotal;
     inTotal;
     allTotal;
@@ -43,10 +48,16 @@ class Player {
     }
 }
 
-function getNewId() {
-    let newId = id;
-    id++;
-    return newId;
+function getNewId(target) {
+    if (target === "scoreCard") {
+        let newId = scoreCardId;
+        scoreCardId++;
+        return newId;
+    } else if (target === "player") {
+        let newId = playerId;
+        playerId++;
+        return newId;
+    }
 }
 
 function getCourses() {
@@ -62,6 +73,9 @@ function getCurrentCourse(golfCourseId) {
 }
 
 function printCourses() {
+    currentPage = "courseSelection";
+    saveThings();
+
     getCourses()
         // get array of each course object from previous promise, pass array to new function
         .then(courseList => {
@@ -274,7 +288,10 @@ function checkSelect() {
     }
 }
             
-function printScoreCard(currentCardName = undefined) {
+function printScoreCard() {
+    currentPage = "scoreCard";
+    saveThings();
+    
     // set variables for scorecard container div and both front 9 and back 9 divs
     let scorecard = document.getElementById("scorecard");
     let front9 = document.getElementById("front-9");
@@ -302,31 +319,37 @@ function printScoreCard(currentCardName = undefined) {
         back9.classList.add("flex");
     }
 
-    makeTable(currentCardName);
+    makeTable();
 }
 
-function makeTable(currentCardName = undefined) {
+function makeTable() {
     // check if card name has been set and if so put it in HTML, if not default to name in API object
-    if (currentCardName !== undefined) {
-        document.querySelector("#scorecard h1").innerHTML = currentCardName;
+    if (currentScoreCard.named === true) {
+        document.querySelector("#scorecard h1").innerHTML = currentScoreCard.name;
     } else {
         document.querySelector("#scorecard h1").innerHTML = currentCourse.name;
     }
-    // add event to rename button
+    // add events to rename scprecard and add new players after scorecard has been created
     document.getElementById("name-btn").addEventListener("click", renameEventHandler);
+    document.getElementById("new-player-btn").addEventListener("click", addNewPlayer);
 
     let tee = currentScoreCard.tee;
     let holes = currentScoreCard.holes;
-    let players = currentScoreCard.players;
 
     // get key of the correct tee
     let hole0Tees = currentCourse.holes[0].teeBoxes;
-    let teeKey;
     Object.keys(hole0Tees).forEach((key) => {
         if (hole0Tees[key].teeColorType === tee) {
-            teeKey = key;
+            currentScoreCard.teeKey = key;
         }
     });
+
+    printHoles(tee, holes);
+}
+
+function printHoles(tee, holes) {
+    let players = currentScoreCard.players;
+    let teeKey = currentScoreCard.teeKey;
 
     // call functions to print which holes were chosen
     if (holes === "front 9") { printFront9(tee, holes, players, teeKey); }
@@ -336,9 +359,23 @@ function makeTable(currentCardName = undefined) {
         document.getElementById("hole-title").classList.add("lg:hidden");
 
         // call both front9 and back9 functions, plus the function to add totals
-        printFront9(tee, holes, players, teeKey);
+        printFront9(tee, holes, players, currentScoreCard.teeKey);
         printBack9(tee, holes, players, teeKey);
         printTotals();
+    }
+}
+
+function addNewPlayer() {
+    let name = document.querySelector("#new-player-input input").value;
+    // if the input field has text in it, add player object to scorecard, reprint scorecard, and set input value back to empty
+    if (name) {
+        this.removeEventListener("click", addNewPlayer);
+        let newPlayer = new Player(name);
+        currentScoreCard.players.push(newPlayer);
+
+        clearTable();
+        printScoreCard();
+        document.querySelector("#new-player-input input").value = "";
     }
 }
 
@@ -488,9 +525,9 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
         // make player rows slightly taller and give each one a class to make it easier to find later
         first5PlayerRow.classList.add("h-10");
-        first5PlayerRow.classList.add(`${player.name}-row`);
+        first5PlayerRow.classList.add(`player${player.id}-row`);
         last4PlayerRow.classList.add("h-10");
-        last4PlayerRow.classList.add(`${player.name}-row`);
+        last4PlayerRow.classList.add(`player${player.id}-row`);
 
         first5PlayerRow.innerHTML = `<td class="font-bold">${player.name}</td>`;
         // make first column of back 9 hidden if printing all 18 and the screen is big enough
@@ -507,12 +544,12 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
             last4PlayerRow.innerHTML += `<td class="stroke-input hover:cursor-pointer hover:bg-emerald-100"></td>`;
             // add space for total strokes in last column
             if (i === 8) {
-                last4PlayerRow.innerHTML += `<td id="${player.name}-strokes-out"></td>`;
+                last4PlayerRow.innerHTML += `<td id="player${player.id}-strokes-out"></td>`;
             } else if (i === 17) {
-                last4PlayerRow.innerHTML += `<td id="${player.name}-strokes-in"></td>`;
+                last4PlayerRow.innerHTML += `<td id="player${player.id}-strokes-in"></td>`;
             }
             if (i === 17 && hole === "all 18") {
-                last4PlayerRow.innerHTML += `<td id="${player.name}-total-strokes"></td>`;
+                last4PlayerRow.innerHTML += `<td id="player${player.id}-total-strokes"></td>`;
             }
         }
     })
@@ -520,7 +557,7 @@ function printPlayers(first5ParRow, last4ParRow, hole, players, indexes, frontOr
 
 function printExistingStrokes(player) {
     // loop through each stroke input box in HTML for each player and get the hole number to add stroke value if it's been inputted
-    let strokeBoxes = document.querySelectorAll(`.${player.name}-row .stroke-input`);
+    let strokeBoxes = document.querySelectorAll(`.player${player.id}-row .stroke-input`);
     let holeNum;
     strokeBoxes.forEach((box) => {
         holeNum = checkCellIndex(box);
@@ -540,13 +577,13 @@ function printExistingStrokes(player) {
     
     // if totals exist and are not 0, add them to html
     if (player.outTotal && player.outTotal !== 0) {
-        document.getElementById(`${player.name}-strokes-out`).innerHTML = player.outTotal;
+        document.getElementById(`player${player.id}-strokes-out`).innerHTML = player.outTotal;
     }
     if (player.inTotal && player.inTotal !== 0) {
-        document.getElementById(`${player.name}-strokes-in`).innerHTML = player.inTotal;
+        document.getElementById(`player${player.id}-strokes-in`).innerHTML = player.inTotal;
     }
     if (player.allTotal && player.allTotal !== 0) {
-        document.getElementById(`${player.name}-total-strokes`).innerHTML = player.allTotal;
+        document.getElementById(`player${player.id}-total-strokes`).innerHTML = player.allTotal;
     }
 }
 
@@ -568,7 +605,7 @@ function checkCellIndex(element) {
 
 function addStrokeEvent(players, holes) {
     players.forEach((player => {
-        let strokeInputs = document.querySelectorAll(`.${player.name}-row .stroke-input`);
+        let strokeInputs = document.querySelectorAll(`.player${player.id}-row .stroke-input`);
 
         // loop through the inputs for each player's strokes on each hole and add events to each box
         strokeInputs.forEach((box) => {
@@ -651,7 +688,7 @@ function printStrokeTotals(player, holes) {
         // add sum of both totals to object and print grand total
         player.allTotal = player.outTotal + player.inTotal;
         if (player.allTotal && player.allTotal !== 0) {
-            document.getElementById(`${player.name}-total-strokes`).innerHTML = player.allTotal;
+            document.getElementById(`player${player.id}-total-strokes`).innerHTML = player.allTotal;
         }
     }
 }
@@ -671,7 +708,7 @@ function calcStrokeTotals(player, inOrOut) {
     player[`${inOrOut}Total`] = strokeTotals;
 
     if (player[`${inOrOut}Total`] && player[`${inOrOut}Total`] !== 0) {
-        document.getElementById(`${player.name}-strokes-${inOrOut}`).innerHTML = player[`${inOrOut}Total`];
+        document.getElementById(`player${player.id}-strokes-${inOrOut}`).innerHTML = player[`${inOrOut}Total`];
     }
 }
 
@@ -700,12 +737,12 @@ function printTotals() {
     hcpRow.innerHTML += `<td></td>`
 }
 
-function openScorecardMenu(e) {
+function openScorecardMenu() {
     // if scoreCards array is not empty, show/hide scorecard menu with list of saved scorecards and change icon
     if (scoreCards[0]) {
         let header = document.getElementById("header")
         let menu = document.getElementById("scorecard-menu");
-        let icon = e.currentTarget.childNodes[0];
+        let icon = document.getElementById("nav-button").childNodes[0];
     
         header.classList.toggle("pb-4");
         icon.classList.toggle("fa-bars");
@@ -721,7 +758,7 @@ function loadScorecards() {
     scorecardMenu.innerHTML = `<h3 class="py-2 text-3xl">Saved Scorecards</h3>`;
 
     scoreCards.forEach((card) => {
-        cardHtml = `<button class="py-1.5 px-2 hover:py-2.5 w-full text-lg border-4 border-gray-500 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white">${card.name}</button>`;
+        cardHtml = `<button id="card${card.id}" class="py-1.5 px-2 hover:py-2.5 w-full text-lg border-4 border-gray-500 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white">${card.name}</button>`;
         scorecardMenu.innerHTML += cardHtml;
     });
 
@@ -733,18 +770,27 @@ function loadScorecards() {
 }
 
 function cardBtnClick(e) {
-    let currentCardName = e.currentTarget.innerHTML;
+    let currentCardId = e.currentTarget.id;
 
     // loop through each scorecard and check if the name is the same as the clicked button, set currentScoreCard to correct object
-    Object.values(scoreCards).forEach((obj) => {
-        if (currentCardName === obj.name) {
-            currentScoreCard = obj;
+    Object.values(scoreCards).forEach((card) => {
+        if (`${currentCardId}` === `card${card.id}`) {
+            currentScoreCard = card;
             // fetch course from API, reset the currentCourse value to be the new value, clear everything and print the scorecard
-            getCurrentCourse(obj.courseId)
+            getCurrentCourse(card.courseId)
                 .then((course) => currentCourse = course)
                 .then(() => {
+                    currentPage = "scoreCard";
+                    saveThings();
+
                     clearTable();
-                    printScoreCard(currentCardName);
+                    openScorecardMenu();
+                    if (document.getElementById("name-btn").classList.contains("hidden")) {
+                        toggleName();
+                    }
+                    document.querySelector("#new-player-input input").value = "";
+                    
+                    printScoreCard(card.name);
                 });
         }
     });
@@ -815,8 +861,11 @@ function submitEventHandler() {
 function submitName() {
     // if the input field has text in it add that name to object and HTML, toggle elements, and load the new scorecards
     if (nameInput.value) {
-        currentScoreCard.name = nameInput.value;
         currentName.innerHTML = nameInput.value;
+        currentScoreCard.name = nameInput.value;
+        currentScoreCard.named = true;
+
+        saveThings();
         toggleName();
         loadScorecards();
     } else {
@@ -825,25 +874,36 @@ function submitName() {
     }
 }
 
-// function to retrieve saved localStorage scoreCards object, currentScoreCard object, currentCourse object, and id, called on page load
+// function to retrieve saved localStorage scoreCards, currentScoreCard, currentCourse, player and scorecard id, and currentPage, called on page load
 function restoreSave() {
     scoreCards = JSON.parse(localStorage.getItem("scoreCards"));
     currentScoreCard = JSON.parse(localStorage.getItem("currentScoreCard"));
     currentCourse = JSON.parse(localStorage.getItem("currentCourse"));
-    id = JSON.parse(localStorage.getItem("id"));
+    playerId = JSON.parse(localStorage.getItem("playerId"));
+    scoreCardId = JSON.parse(localStorage.getItem("scoreCardId"));
+    currentPage = localStorage.getItem("currentPage");
 
-    // clear table, load all scorecards as buttons in dropdown, and reload current scorecard
+    // clear table, load all scorecards as buttons in dropdown, and clear add new player input value
     clearTable();
     loadScorecards();
-    printScoreCard();
+    document.querySelector("#new-player-input input").value = "";
+
+    // either reload current scorecard or print available courses
+    if (currentPage === "scoreCard") {
+        printScoreCard();
+    } else {
+        printCourses();
+    }
 }
 
-// function to save scoreCards object, currentScoreCard object, currentCourse object, and id, called each time a new scorecard or stroke is added
+// function to save scoreCards, currentScoreCard, currentCourse, player and scorecard id, and currentPage, called each time something is changed
 function saveThings() {
     localStorage.setItem("scoreCards", JSON.stringify(scoreCards));
     localStorage.setItem("currentScoreCard", JSON.stringify(currentScoreCard));
     localStorage.setItem("currentCourse", JSON.stringify(currentCourse));
-    localStorage.setItem("id", JSON.stringify(id));
+    localStorage.setItem("playerId", JSON.stringify(playerId));
+    localStorage.setItem("scoreCardId", JSON.stringify(scoreCardId));
+    localStorage.setItem("currentPage", currentPage);
 }
 
 window.addEventListener("load", () => {
@@ -856,13 +916,23 @@ window.addEventListener("load", () => {
 
     document.getElementById("nav-button").addEventListener("click", openScorecardMenu);
 
-    // when title is clicked, reset options, clear tables, and go back to start page
+    // when title is clicked, reset/clear everything, and go back to start page
     document.querySelector("#header h2").addEventListener("click", () => {
+        currentPage = "courseSelection";
+        saveThings();
+
         optionsPicked = ["tee", "holes"];
         playerInputs = [];
         currentCourse = {};
-
+        if (document.getElementById("scorecard-menu").classList.contains("flex")) {
+            openScorecardMenu();
+        }
+        if (document.getElementById("name-btn").classList.contains("hidden")) {
+            toggleName();
+        }
+        document.querySelector("#new-player-input input").value = "";
         clearTable();
+
         printCourses();
     });
 });
